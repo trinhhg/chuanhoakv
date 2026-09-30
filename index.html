@@ -1,378 +1,1108 @@
 <!DOCTYPE html>
-<html lang="vi">
+<html lang="vi" class="h-full">
 <head>
 <meta charset="UTF-8">
-<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-<title>Chuẩn hóa Schema Đơn Hàng</title>
-<style>
-:root{
-  --bg:#10131a; --panel:#171b25; --panel2:#1d2230; --border:#2a3040;
-  --text:#e7eaf1; --muted:#8890a1; --accent:#5b8cff;
-  --ok:#2fb872; --ok-bg:#173626; --warn:#d99a2b; --warn-bg:#332608;
-  --bad:#e5555f; --bad-bg:#3a1418; --susp:#e2812f; --susp-bg:#3a230c;
-  --na-bg:#1a1e29; --na-text:#5b6376;
-  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
-}
-@media (prefers-color-scheme: light){
-  :root:not([data-theme="dark"]){
-    --bg:#f4f5f8; --panel:#fff; --panel2:#eef0f4; --border:#dadde3;
-    --text:#171a21; --muted:#666e7d; --na-bg:#eef0f4; --na-text:#9aa1ad;
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>KV Order Schema Normalizer & Sheet Editor — VPNTrinhHg</title>
+<script src="https://cdn.tailwindcss.com"></script>
+<script>
+  tailwind.config = {
+    darkMode: 'class',
+    theme: {
+      extend: {
+        fontFamily: { sans: ['"Plus Jakarta Sans"', 'Inter', 'sans-serif'] },
+        colors: {
+          brand: { 50: '#eff6ff', 500: '#3b82f6', 600: '#2563eb', 700: '#1d4ed8' },
+          kv: { 500: '#f6821f', 600: '#e57310' }
+        }
+      }
+    }
   }
-}
-*{box-sizing:border-box;}
-html,body{height:100%;}
-body{
-  margin:0; background:var(--bg); color:var(--text);
-  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
-}
-.wrap{max-width:100%; padding:16px; padding-top:calc(16px + env(safe-area-inset-top,0px));}
-h1{font-size:1.15rem; font-weight:650; margin:0 0 2px;}
-.sub{color:var(--muted); font-size:.85rem; margin:0 0 16px;}
-.panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px;}
-textarea{
-  width:100%; min-height:110px; background:var(--panel2); color:var(--text);
-  border:1px solid var(--border); border-radius:8px; padding:10px;
-  font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; resize:vertical;
-}
-.row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;}
-button{
-  background:var(--accent); color:#fff; border:none; border-radius:7px;
-  padding:9px 14px; font-size:.85rem; font-weight:600; cursor:pointer;
-}
-button.ghost{background:transparent; color:var(--text); border:1px solid var(--border);}
-button:active{opacity:.8;}
-.stats{display:flex; gap:14px; flex-wrap:wrap; font-size:.8rem; color:var(--muted);}
-.dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:1px;}
-.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:.78rem; color:var(--muted); margin-top:8px;}
-.tablewrap{overflow:auto; border:1px solid var(--border); border-radius:10px; max-height:70vh;}
-table{border-collapse:collapse; font-size:12.5px; width:max-content; min-width:100%;}
-th,td{
-  padding:6px 8px; border-bottom:1px solid var(--border); border-right:1px solid var(--border);
-  white-space:nowrap; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
-}
-th{
-  position:sticky; top:0; background:var(--panel2); color:var(--muted);
-  font-weight:600; text-align:left; z-index:2; font-family:-apple-system,sans-serif;
-}
-td:first-child, th:first-child{position:sticky; left:0; z-index:1; background:var(--panel2);}
-td[contenteditable]{outline:none; cursor:text; min-width:70px; max-width:220px; overflow:hidden; text-overflow:ellipsis;}
-td[contenteditable]:focus{box-shadow:inset 0 0 0 2px var(--accent); overflow:visible; white-space:normal;}
-.c-ok{background:var(--ok-bg); color:var(--ok);}
-.c-warn{background:var(--warn-bg); color:var(--warn);}
-.c-bad{background:var(--bad-bg); color:var(--bad);}
-.c-susp{background:var(--susp-bg); color:var(--susp);}
-.c-na{background:var(--na-bg); color:var(--na-text);}
-.rowidx{color:var(--muted); background:var(--panel2)!important; text-align:right;}
-#exportBox{display:none;}
-#exportBox textarea{min-height:220px;}
-.empty{color:var(--muted); font-size:.85rem; padding:20px; text-align:center;}
+</script>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" rel="stylesheet">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<style>
+  body { font-family: 'Plus Jakarta Sans', sans-serif; }
+  .font-mono { font-family: 'JetBrains Mono', monospace; }
+  /* Custom scrollbar */
+  ::-webkit-scrollbar { width: 8px; height: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: #cbd5e1; border-radius: 4px; }
+  .dark ::-webkit-scrollbar-thumb { background: #475569; }
+  ::-webkit-scrollbar-thumb:hover { background: #94a3b8; }
+  /* Sticky table styles */
+  .sheet-table th, .sheet-table td { white-space: nowrap; }
+  .sticky-col-1 { position: sticky; left: 0; z-index: 20; }
+  .sticky-col-2 { position: sticky; left: 48px; z-index: 20; }
+  .sticky-col-3 { position: sticky; left: 180px; z-index: 20; }
+  th.sticky-col-1, th.sticky-col-2, th.sticky-col-3 { z-index: 30; }
 </style>
 </head>
-<body>
-<div class="wrap">
-  <h1>Chuẩn hóa schema đơn hàng</h1>
-  <p class="sub">Dán JSON KV (mảng order) vào ô bên dưới. Tool sẽ áp schema cố định lên từng đơn, tô màu theo mức độ thiếu/sai, cho sửa trực tiếp trong bảng, rồi xuất lại JSON chuẩn. Đã bỏ 2 cột trùng lặp/không dùng tới trong code (dateCreated, daysLeft) — 4 file code chỉ đọc <code>date</code> (chuỗi hiển thị) và <code>createdTs</code> (epoch ms) để tính thời gian, còn <code>dateCreated</code> không được đọc lại ở đâu và <code>daysLeft</code> luôn được tính lại tại chỗ chứ không lưu. "Chuẩn hóa ngày giờ" gộp mọi kiểu cũ (HH:MM:SS DD/MM/YYYY, DD/MM/YY HH:MM, ISO, epoch...) trong 2 cột <code>date</code> và <code>fulfilledAt</code> về đúng 1 kiểu DD/MM/YYYY HH:MM.</p>
+<body class="bg-slate-50 text-slate-800 dark:bg-slate-950 dark:text-slate-100 h-full flex flex-col antialiased transition-colors duration-200">
 
-  <div class="panel">
-    <textarea id="input" placeholder="Dán mảng JSON các order vào đây..."></textarea>
-    <div class="row">
-      <button id="parseBtn">Chuẩn hóa</button>
-      <button class="ghost" id="dateBtn">Chuẩn hóa ngày giờ</button>
-      <button class="ghost" id="sampleClear">Xóa</button>
-      <label class="ghost" style="border:1px solid var(--border); border-radius:7px; padding:9px 14px; font-size:.85rem; cursor:pointer;">
-        Tải file .json<input type="file" id="fileInput" accept=".json" style="display:none;">
-      </label>
-      <span class="sub" id="fileNote"></span>
+  <!-- HEADER -->
+  <header class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2.5 flex-none shadow-sm z-40">
+    <div class="max-w-[1920px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <div class="flex items-center gap-3">
+        <div class="w-9 h-9 rounded-xl bg-gradient-to-tr from-orange-500 to-amber-500 text-white flex items-center justify-center font-black text-lg shadow-md shadow-orange-500/20">
+          <i class="fa-solid fa-database"></i>
+        </div>
+        <div>
+          <div class="flex items-center gap-2">
+            <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">KV Order Schema Normalizer</h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-orange-100 text-orange-700 dark:bg-orange-950/60 dark:text-orange-300 border border-orange-200 dark:border-orange-800/50">v2.5 Pro</span>
+          </div>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Trình quản lý & chuẩn hóa dữ liệu Cloudflare KV <span class="font-mono font-semibold text-slate-700 dark:text-slate-300">ALL_ORDERS</span></p>
+        </div>
+      </div>
+
+      <!-- Quick Action Buttons -->
+      <div class="flex items-center flex-wrap gap-2">
+        <button onclick="toggleInputPanel()" id="btnToggleInput" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-code"></i> <span>Dán / Nạp JSON</span>
+        </button>
+        <button onclick="autoFixAll()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-sm shadow-emerald-600/20 transition flex items-center gap-1.5">
+          <i class="fa-solid fa-wand-magic-sparkles"></i> <span>Chuẩn hóa toàn bộ</span>
+        </button>
+        <button onclick="copyMinifiedJson()" class="px-3.5 py-1.5 rounded-lg text-xs font-extrabold bg-blue-600 hover:bg-blue-500 text-white shadow-sm shadow-blue-600/30 transition flex items-center gap-1.5 active:scale-95">
+          <i class="fa-regular fa-copy"></i> <span>COPY JSON 1 DÒNG (KV)</span>
+        </button>
+        <button onclick="openJsonModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-eye"></i> <span>Xem JSON</span>
+        </button>
+        <button onclick="downloadJsonFile()" class="p-2 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700" title="Tải xuống tệp JSON">
+          <i class="fa-solid fa-download"></i>
+        </button>
+        <button onclick="toggleDarkMode()" class="p-2 rounded-lg text-xs bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-600 dark:text-slate-300 transition border border-slate-200 dark:border-slate-700" title="Đổi giao diện sáng/tối">
+          <i class="fa-solid fa-moon dark:hidden"></i>
+          <i class="fa-solid fa-sun hidden dark:inline"></i>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <!-- COLLAPSIBLE INPUT / RAW JSON PANEL -->
+  <section id="inputPanel" class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex-none shadow-inner transition-all duration-300">
+    <div class="max-w-[1920px] mx-auto grid grid-cols-1 lg:grid-cols-4 gap-4">
+      <div class="lg:col-span-3 flex flex-col gap-2">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
+            <i class="fa-solid fa-paste text-blue-500"></i> Dán dữ liệu JSON từ Cloudflare KV (Mảng [ { ... } ] hoặc đối tượng):
+          </label>
+          <div class="flex gap-2 text-xs">
+            <button onclick="loadSampleData()" class="text-blue-600 hover:underline">Nạp dữ liệu mẫu</button>
+            <span class="text-slate-300 dark:text-slate-700">|</span>
+            <button onclick="clearInput()" class="text-rose-600 hover:underline">Xóa ô nhập</button>
+          </div>
+        </div>
+        <textarea id="rawJsonInput" rows="5" placeholder='Dán mảng JSON vào đây, ví dụ: [{"id":"DHEDR7D9HAPQ", "email":"user@gmail.com", ...}]' class="w-full p-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 resize-y"></textarea>
+      </div>
+
+      <div class="flex flex-col justify-between gap-3 bg-slate-50 dark:bg-slate-950/50 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div>
+          <div class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
+            <i class="fa-solid fa-circle-info text-amber-500"></i> Quy chuẩn Schema:
+          </div>
+          <ul class="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 list-disc list-inside">
+            <li>Tự động chuẩn hóa <b>35 trường canonical</b>.</li>
+            <li>Sửa <code class="text-rose-500 font-mono">lockInfo</code> thành Object <code class="font-mono">{}</code> (không để chuỗi).</li>
+            <li>Đồng bộ <code class="font-mono">createdTs</code>, <code class="font-mono">date</code>, <code class="font-mono">dateCreated</code>, <code class="font-mono">expDate</code>.</li>
+            <li>Đảm bảo số nguyên cho tiền & ngày.</li>
+          </ul>
+        </div>
+        <div class="flex flex-col gap-2">
+          <button onclick="parseAndLoadJson()" class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-sm flex items-center justify-center gap-1.5 transition">
+            <i class="fa-solid fa-play"></i> <span>Phân tích & Tải vào Bảng</span>
+          </button>
+          <button onclick="toggleInputPanel()" class="w-full py-1.5 px-3 rounded-lg text-xs font-semibold text-slate-500 hover:text-slate-700 dark:hover:text-slate-300 bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800">
+            Thu gọn bảng nhập
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- STATS & TOOLBAR -->
+  <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2 flex-none shadow-sm">
+    <div class="max-w-[1920px] mx-auto flex flex-wrap items-center justify-between gap-3">
+      <!-- Stats Badges -->
+      <div class="flex items-center flex-wrap gap-2 text-xs">
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-list-ol text-blue-500"></i> Tổng: <b id="statTotal" class="text-blue-600 dark:text-blue-400">0</b> đơn
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 text-emerald-700 dark:text-emerald-300 font-semibold border border-emerald-200 dark:border-emerald-800/50">
+          <i class="fa-solid fa-circle-check text-emerald-500"></i> Success: <b id="statSuccess">0</b>
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/40 text-amber-700 dark:text-amber-300 font-semibold border border-amber-200 dark:border-amber-800/50">
+          <i class="fa-solid fa-clock text-amber-500"></i> Pending: <b id="statPending">0</b>
+        </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 text-rose-700 dark:text-rose-300 font-semibold border border-rose-200 dark:border-rose-800/50">
+          <i class="fa-solid fa-triangle-exclamation text-rose-500"></i> Cảnh báo: <b id="statWarning">0</b>
+        </div>
+        <div class="hidden sm:flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
+          <i class="fa-solid fa-money-bill-wave text-emerald-600"></i> Doanh thu: <b id="statVnd" class="text-slate-900 dark:text-white">0đ</b> <span id="statCnyWrap" class="hidden">/ <b id="statCny" class="text-amber-600">0¥</b></span>
+        </div>
+        <div class="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-mono">
+          <i class="fa-solid fa-hard-drive text-slate-400"></i> KV Size: <span id="statKvSize">0 KB</span>
+        </div>
+      </div>
+
+      <!-- Filters & Search -->
+      <div class="flex items-center flex-wrap gap-2 text-xs">
+        <div class="relative">
+          <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
+          <input type="text" id="searchInput" oninput="renderTable()" placeholder="Tìm ID, email, gói..." class="pl-7 pr-3 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs focus:outline-none focus:ring-1 focus:ring-blue-500 text-slate-800 dark:text-slate-200 w-36 sm:w-48">
+        </div>
+
+        <select id="statusFilter" onchange="renderTable()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 focus:outline-none">
+          <option value="all">Tất cả trạng thái</option>
+          <option value="success">Success</option>
+          <option value="pending">Pending</option>
+          <option value="failed">Failed</option>
+          <option value="warning">Chỉ đơn có lỗi/cảnh báo</option>
+        </select>
+
+        <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+        <!-- Batch Tools -->
+        <button onclick="syncAllDates()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Tự động tính toán lại ngày tạo và ngày hết hạn theo số ngày">
+          <i class="fa-regular fa-calendar-check text-blue-500"></i> Đồng bộ ngày
+        </button>
+        <button onclick="fixLockInfoAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Ép lockInfo về Object {}">
+          <i class="fa-solid fa-lock text-amber-500"></i> Sửa lockInfo
+        </button>
+        <button onclick="addNewRow()" class="px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold transition flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+          <i class="fa-solid fa-plus"></i> Thêm dòng
+        </button>
+        <button onclick="deleteSelectedRows()" id="btnDeleteSelected" class="hidden px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 font-bold transition items-center gap-1 border border-rose-200 dark:border-rose-800">
+          <i class="fa-solid fa-trash"></i> Xóa (<span id="selectedCount">0</span>)
+        </button>
+      </div>
+    </div>
+  </section>
+
+  <!-- MAIN SPREADSHEET TABLE -->
+  <main class="flex-1 overflow-auto relative bg-slate-100 dark:bg-slate-950">
+    <table class="sheet-table w-full border-collapse text-[12px] text-left">
+      <!-- TABLE HEAD -->
+      <thead class="bg-slate-200/90 dark:bg-slate-800/90 backdrop-blur sticky top-0 z-30 shadow-sm text-slate-700 dark:text-slate-300 font-bold select-none border-b border-slate-300 dark:border-slate-700">
+        <tr>
+          <th class="p-2 w-12 text-center sticky-col-1 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700">
+            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-blue-600 focus:ring-0 cursor-pointer">
+          </th>
+          <th class="p-2 w-12 text-center sticky-col-2 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-400">#</th>
+          <th class="p-2 w-36 sticky-col-3 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700">Mã đơn (id)</th>
+          <th class="p-2 w-28 border-r border-slate-300 dark:border-slate-700">Trạng thái</th>
+          <th class="p-2 w-48 border-r border-slate-300 dark:border-slate-700">Email</th>
+          <th class="p-2 w-32 border-r border-slate-300 dark:border-slate-700">Phương thức</th>
+          <th class="p-2 w-32 border-r border-slate-300 dark:border-slate-700">Gói (pkgId)</th>
+          <th class="p-2 w-24 text-right border-r border-slate-300 dark:border-slate-700">Tổng tiền (VND)</th>
+          <th class="p-2 w-20 text-center border-r border-slate-300 dark:border-slate-700">Số ngày</th>
+          <th class="p-2 w-32 border-r border-slate-300 dark:border-slate-700">Ngày tạo</th>
+          <th class="p-2 w-28 border-r border-slate-300 dark:border-slate-700">Hết hạn (expDate)</th>
+          <th class="p-2 w-28 border-r border-slate-300 dark:border-slate-700">lockInfo</th>
+          <th class="p-2 w-32 border-r border-slate-300 dark:border-slate-700">workerUrl</th>
+          <th class="p-2 w-28 border-r border-slate-300 dark:border-slate-700">Loại đơn</th>
+          <th class="p-2 w-24 text-center border-r border-slate-300 dark:border-slate-700">Hỗ trợ</th>
+          <th class="p-2 w-44 border-r border-slate-300 dark:border-slate-700">Info 1/2/3</th>
+          <th class="p-2 w-24 text-center">Thao tác</th>
+        </tr>
+      </thead>
+
+      <!-- TABLE BODY -->
+      <tbody id="sheetBody" class="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900">
+        <!-- Rendered by JS -->
+      </tbody>
+    </table>
+
+    <!-- EMPTY STATE -->
+    <div id="emptyState" class="hidden flex flex-col items-center justify-center p-12 text-center text-slate-400">
+      <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-2xl mb-3">
+        <i class="fa-regular fa-folder-open"></i>
+      </div>
+      <p class="font-bold text-base text-slate-600 dark:text-slate-300">Chưa có dữ liệu đơn hàng</p>
+      <p class="text-xs max-w-sm mt-1 mb-4">Hãy bấm nút "Dán / Nạp JSON" ở trên thanh công cụ hoặc nạp dữ liệu mẫu để bắt đầu chuẩn hóa.</p>
+      <button onclick="loadSampleData()" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow transition">
+        Nạp dữ liệu mẫu để kiểm tra
+      </button>
+    </div>
+  </main>
+
+  <!-- TOAST NOTIFICATION -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xl text-xs font-bold">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastMsg">Đã sao chép!</span>
+  </div>
+
+  <!-- JSON PREVIEW MODAL -->
+  <div id="jsonModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-4xl max-h-[90vh] flex flex-col overflow-hidden animate-scaleIn">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <div class="flex items-center gap-2">
+          <i class="fa-solid fa-file-code text-blue-500"></i>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">Xem trước Dữ liệu Cloudflare KV</h3>
+          <span id="modalStats" class="text-xs font-mono text-slate-500 bg-slate-100 dark:bg-slate-800 px-2 py-0.5 rounded">0 bytes</span>
+        </div>
+        <div class="flex items-center gap-2">
+          <button onclick="toggleJsonFormatMode()" id="btnToggleFormat" class="px-2.5 py-1 text-xs font-semibold rounded-lg bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 transition">
+            <i class="fa-solid fa-indent"></i> Chuyển sang Dạng đẹp (2 spaces)
+          </button>
+          <button onclick="closeJsonModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400 hover:text-slate-600 dark:hover:text-slate-200 flex items-center justify-center transition">
+            <i class="fa-solid fa-xmark"></i>
+          </button>
+        </div>
+      </div>
+      <!-- Modal Body -->
+      <div class="p-4 flex-1 overflow-auto bg-slate-50 dark:bg-slate-950 font-mono text-xs">
+        <textarea id="modalJsonOutput" readonly class="w-full h-full min-h-[350px] p-3 bg-transparent text-slate-800 dark:text-slate-200 border-0 focus:outline-none resize-none font-mono text-xs select-all"></textarea>
+      </div>
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex items-center justify-between">
+        <p class="text-[11px] text-slate-500">Mẹo: Để dán vào Cloudflare KV, luôn dùng bản <b>1 Dòng duy nhất (Minified)</b>.</p>
+        <div class="flex gap-2">
+          <button onclick="copyModalJson()" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow transition flex items-center gap-1.5">
+            <i class="fa-regular fa-copy"></i> Sao chép toàn bộ
+          </button>
+          <button onclick="closeJsonModal()" class="px-3 py-2 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">
+            Đóng
+          </button>
+        </div>
+      </div>
     </div>
   </div>
 
-  <div class="panel" id="statsPanel" style="display:none;">
-    <div class="stats" id="stats"></div>
-    <div class="legend">
-      <span><span class="dot" style="background:var(--ok)"></span>Hợp lệ</span>
-      <span><span class="dot" style="background:var(--warn)"></span>Thiếu (cảnh báo)</span>
-      <span><span class="dot" style="background:var(--bad)"></span>Thiếu/sai (lỗi)</span>
-      <span><span class="dot" style="background:var(--susp)"></span>Nghi ngờ mâu thuẫn</span>
-      <span><span class="dot" style="background:var(--na-text)"></span>Không bắt buộc, trống</span>
+  <!-- ORDER EDIT MODAL -->
+  <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-4">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-2xl max-h-[90vh] flex flex-col overflow-hidden">
+      <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between">
+        <h3 class="font-bold text-sm text-slate-900 dark:text-white flex items-center gap-2">
+          <i class="fa-solid fa-pen-to-square text-blue-500"></i> Chỉnh sửa đơn: <span id="editModalId" class="font-mono text-blue-600"></span>
+        </h3>
+        <button onclick="closeEditModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+      <div class="p-5 flex-1 overflow-y-auto space-y-4 text-xs">
+        <input type="hidden" id="editRowIndex">
+        <div class="grid grid-cols-2 gap-3">
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Mã đơn (ID):</label>
+            <input type="text" id="editId" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono font-bold">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Trạng thái:</label>
+            <select id="editStatus" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+              <option value="success">success</option>
+              <option value="pending">pending</option>
+              <option value="failed">failed</option>
+            </select>
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Email:</label>
+            <input type="text" id="editEmail" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Phương thức:</label>
+            <input type="text" id="editMethod" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Mã gói (pkgId):</label>
+            <input type="text" id="editPkgId" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Tên gói (pkgName):</label>
+            <input type="text" id="editPkgName" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Tổng tiền VND (totalVnd):</label>
+            <input type="number" id="editTotalVnd" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Số ngày (days):</label>
+            <input type="number" id="editDays" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Ngày tạo (dateCreated):</label>
+            <input type="text" id="editDateCreated" placeholder="DD/MM/YYYY" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono">
+          </div>
+          <div>
+            <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Ngày hết hạn (expDate):</label>
+            <input type="text" id="editExpDate" placeholder="DD/MM/YYYY" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono">
+          </div>
+        </div>
+
+        <div class="border-t border-slate-200 dark:border-slate-800 pt-3">
+          <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Khóa thông tin (lockInfo - chuẩn Object):</label>
+          <div class="flex items-center gap-4 bg-slate-50 dark:bg-slate-950 p-2.5 rounded-lg border border-slate-200 dark:border-slate-800">
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="editLockInfo1" class="rounded text-blue-600"> <span>Khóa Link 1 (info1)</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="editLockInfo2" class="rounded text-blue-600"> <span>Khóa Link 2 (info2)</span>
+            </label>
+            <label class="flex items-center gap-1.5 cursor-pointer">
+              <input type="checkbox" id="editLockInfo3" class="rounded text-blue-600"> <span>Khóa Link 3 (info3)</span>
+            </label>
+          </div>
+        </div>
+
+        <div>
+          <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">Worker URL phụ trách:</label>
+          <input type="text" id="editWorkerUrl" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-slate-50 dark:bg-slate-950 font-mono">
+        </div>
+      </div>
+      <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-white dark:bg-slate-900 flex justify-end gap-2">
+        <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 text-slate-600 dark:text-slate-300">Hủy</button>
+        <button onclick="saveEditModal()" class="px-4 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow">Lưu thay đổi</button>
+      </div>
     </div>
-    <div class="row">
-      <button id="exportBtn">Xuất JSON</button>
-      <button class="ghost" id="copyBtn">Copy JSON</button>
-      <button class="ghost" id="downloadBtn">Tải file .json</button>
-    </div>
-    <div id="exportBox"><textarea id="exportOut" readonly></textarea></div>
   </div>
 
-  <div class="tablewrap" id="tableWrap"><div class="empty">Chưa có dữ liệu. Dán JSON và bấm "Chuẩn hóa".</div></div>
-</div>
+  <script>
+    // ==========================================
+    // 1. CANONICAL SCHEMA DEFINITION (35 FIELDS)
+    // ==========================================
+    const CANONICAL_KEYS = [
+      "id", "email", "nickname", "zalo", "method", "pkgId", "pkgName", "pkgData", "pkg",
+      "qty", "days", "totalVnd", "totalCny", "needSupport", "status", "createdTs",
+      "date", "dateCreated", "expDate", "expFinal", "paidAt", "fulfilledAt",
+      "workerUrl", "sourceWeb", "orderType", "reason", "info1", "info2", "info3",
+      "lockInfo", "lockAuto", "lockExpiry", "isUpgrade", "pendingUpgrade", "upgradeStatus"
+    ];
 
-<script>
-// Fixed canonical schema — aggregated from every field seen across the order KV store.
-const SCHEMA = [
-  {k:'id', label:'ID', lvl:'req'},
-  {k:'email', label:'Email', lvl:'req'},
-  {k:'nickname', label:'Tên KH', lvl:'warn'},
-  {k:'zalo', label:'Zalo', lvl:'warn'},
-  {k:'method', label:'PT thanh toán', lvl:'req'},
-  {k:'pkgId', label:'Mã gói', lvl:'warn'},
-  {k:'pkgName', label:'Tên gói', lvl:'req'},
-  {k:'pkgData', label:'Dung lượng', lvl:'req'},
-  {k:'pkg', label:'Gói (mô tả)', lvl:'req'},
-  {k:'qty', label:'SL', lvl:'warn'},
-  {k:'days', label:'Số ngày', lvl:'req'},
-  {k:'totalVnd', label:'Tiền VND', lvl:'cond'},
-  {k:'totalCny', label:'Tiền CNY', lvl:'cond'},
-  {k:'status', label:'Trạng thái', lvl:'status'},
-  {k:'date', label:'Ngày tạo', lvl:'req'},
-  {k:'createdTs', label:'Timestamp', lvl:'info'},
-  {k:'expDate', label:'Ngày hết hạn', lvl:'warn'},
-  {k:'fulfilledAt', label:'TG xử lý', lvl:'info'},
-  {k:'needSupport', label:'Cần hỗ trợ', lvl:'flag'},
-  {k:'reason', label:'Lý do lỗi', lvl:'reason'},
-  {k:'info1', label:'Info1', lvl:'info'},
-  {k:'info2', label:'Info2', lvl:'info'},
-  {k:'info3', label:'Info3', lvl:'info'},
-  {k:'orderType', label:'Loại đơn', lvl:'info'},
-  {k:'expFinal', label:'Exp Final', lvl:'info'},
-  {k:'isUpgrade', label:'Nâng cấp?', lvl:'info'},
-  {k:'pendingUpgrade', label:'Chờ nâng cấp', lvl:'info'},
-  {k:'upgradeStatus', label:'TT nâng cấp', lvl:'info'},
-  {k:'lockInfo', label:'Khóa', lvl:'info'},
-];
-// Alternate key names a source file might use — mapped into the fixed schema, never used to add columns.
-const ALIASES = {
-  totalVnd:['totalVnd','total_vnd','total','amount','price'],
-  totalCny:['totalCny','total_cny'],
-  pkgData:['pkgData','data'],
-  pkgName:['pkgName','package_name'],
-  zalo:['zalo','zaloId'],
-  method:['method','payment_method'],
-  nickname:['nickname','name','customer_name'],
-};
-function aliasesFor(k){ return ALIASES[k] || [k]; }
-function toStr(v){ if(v===undefined||v===null) return ''; if(typeof v==='object') return JSON.stringify(v); return String(v); }
+    let orders = [];
+    let selectedIndices = new Set();
+    let isPrettyMode = false;
 
-let rows = []; // {canon:{field:string}}
+    // Sample data generator for testing
+    function loadSampleData() {
+      const sample = [
+        {
+          "id": "DHEDR7D9HAPQ",
+          "email": "doicucden@gmail.com",
+          "zalo": "",
+          "method": "Ngân hàng VN",
+          "pkgId": "t1",
+          "qty": 1,
+          "pkgName": "Gói 1 tháng",
+          "pkgData": "100GB",
+          "pkg": "Gói 1 tháng - 60,000VND",
+          "totalVnd": 60000,
+          "totalCny": "",
+          "days": 30,
+          "needSupport": false,
+          "status": "success",
+          "createdTs": 1790692160325,
+          "date": "29/09/2026 21:29",
+          "dateCreated": "29/09/2026",
+          "expFinal": true,
+          "workerUrl": "https://vpntrinhhg3worker.lucastanora.workers.dev",
+          "nickname": "",
+          "reason": "",
+          "info1": "",
+          "info2": "https://vpntrinhhg2.pages.dev/v1/VPNTrinhHg?OwO=987309da0c0d669ee50711572e78e391#VPNTrinhHg",
+          "info3": "https://vpntrinhhg3.pages.dev/v1/VPNTrinhHg?OwO=878a1c28fb0d04a0b735c3b0407c85ea#VPNTrinhHg",
+          "lockInfo": {},
+          "sourceWeb": "https://vpntrinhhg3.pages.dev/",
+          "orderType": "new",
+          "expDate": "29/10/2026",
+          "paidAt": 1790692162047,
+          "fulfilledAt": 1790692162047
+        },
+        {
+          "id": "DHJA1TS3E2IO",
+          "email": "customer@gmail.com",
+          "method": "Ngân hàng VN",
+          "pkg": "Gói 1 tháng - 60,000VND",
+          "totalVnd": "60000", // Cố tình để dạng chuỗi để test auto-fix
+          "days": "30",
+          "status": "pending",
+          "date": "29/09/2026 10:29",
+          "lockInfo": "{}" // Cố tình để dạng chuỗi lỗi để test auto-fix
+        }
+      ];
+      document.getElementById('rawJsonInput').value = JSON.stringify(sample);
+      parseAndLoadJson();
+      showToast("Đã tải 2 đơn mẫu để thử nghiệm!", "success");
+    }
 
-function mapToCanon(raw){
-  const canon = {};
-  SCHEMA.forEach(f=>{
-    let val;
-    for(const a of aliasesFor(f.k)){ if(raw[a]!==undefined){ val = raw[a]; break; } }
-    canon[f.k] = toStr(val);
-  });
-  return canon;
-}
+    // ==========================================
+    // 2. PARSING & CANONICAL NORMALIZATION LOGIC
+    // ==========================================
+    function normalizeOrder(raw) {
+      if (!raw || typeof raw !== 'object') raw = {};
+      const clean = {};
 
-function classifyRow(canon){
-  const cls = {};
-  const method = (canon.method||'').toLowerCase();
-  const isForeign = /alipay|weixin|wechat/.test(method);
-  const status = (canon.status||'').toLowerCase();
+      // 1. Strings
+      clean.id = String(raw.id || "").trim().toUpperCase();
+      clean.email = String(raw.email || "").trim().toLowerCase();
+      clean.nickname = String(raw.nickname || "").trim();
+      clean.zalo = String(raw.zalo || "").trim();
+      clean.method = String(raw.method || "Ngân hàng VN").trim();
+      clean.pkgId = String(raw.pkgId || "").trim();
+      clean.pkgName = String(raw.pkgName || "").trim();
+      clean.pkgData = String(raw.pkgData || "").trim();
+      clean.pkg = String(raw.pkg || "").trim();
 
-  SCHEMA.forEach(f=>{
-    const empty = canon[f.k]==='';
-    if(f.lvl==='req') cls[f.k] = empty ? 'bad' : 'ok';
-    else if(f.lvl==='warn') cls[f.k] = empty ? 'warn' : 'ok';
-    else if(f.lvl==='info') cls[f.k] = empty ? 'na' : 'ok';
-    else cls[f.k] = 'na';
-  });
+      // 2. Numbers
+      clean.qty = (typeof raw.qty === 'number' && raw.qty > 0) ? Math.floor(raw.qty) : (parseInt(raw.qty) || 1);
+      clean.days = (raw.days !== "" && raw.days !== null && raw.days !== undefined && !isNaN(raw.days)) ? Number(raw.days) : "";
+      clean.totalVnd = (raw.totalVnd !== "" && raw.totalVnd !== null && raw.totalVnd !== undefined && !isNaN(raw.totalVnd)) ? Number(raw.totalVnd) : "";
+      clean.totalCny = (raw.totalCny !== "" && raw.totalCny !== null && raw.totalCny !== undefined && !isNaN(raw.totalCny)) ? Number(raw.totalCny) : "";
 
-  // Conditional currency: VN bank/manual orders require totalVnd; Alipay/Weixin require totalCny.
-  const vndEmpty = canon.totalVnd==='';
-  const cnyEmpty = canon.totalCny==='';
-  if(isForeign){
-    cls.totalCny = cnyEmpty ? 'bad' : 'ok';
-    cls.totalVnd = vndEmpty ? 'na' : 'susp';
-  } else {
-    cls.totalVnd = vndEmpty ? 'bad' : 'ok';
-    cls.totalCny = cnyEmpty ? 'na' : 'susp';
-  }
+      // 3. Status & Booleans
+      clean.needSupport = Boolean(raw.needSupport);
+      clean.status = String(raw.status || "pending").trim();
+      
+      // 4. Timestamps & Dates
+      clean.createdTs = Number(raw.createdTs) || 0;
+      clean.date = String(raw.date || "").trim();
+      clean.dateCreated = String(raw.dateCreated || "").trim();
 
-  // Status: failed/empty flagged red, success green, anything else amber.
-  if(status==='') cls.status='bad';
-  else if(status==='failed') cls.status='bad';
-  else if(status==='success') cls.status='ok';
-  else cls.status='warn';
-
-  // Failed orders should carry a reason.
-  if(canon.reason!=='') cls.reason='ok';
-  else cls.reason = (status==='failed') ? 'susp' : 'na';
-
-  // needSupport true is a flag worth a look, not an error.
-  cls.needSupport = (canon.needSupport==='true') ? 'susp' : 'na';
-
-  // pkg description vs pkgData GB mismatch.
-  const pkgGB = (canon.pkg||'').match(/(\d+)\s*GB/i);
-  const dataGB = (canon.pkgData||'').match(/(\d+)\s*GB/i);
-  if(pkgGB && dataGB && pkgGB[1]!==dataGB[1]) cls.pkgData='susp';
-
-  return cls;
-}
-
-function render(){
-  const tw = document.getElementById('tableWrap');
-  if(!rows.length){ tw.innerHTML='<div class="empty">Chưa có dữ liệu. Dán JSON và bấm "Chuẩn hóa".</div>'; document.getElementById('statsPanel').style.display='none'; return; }
-  document.getElementById('statsPanel').style.display='block';
-
-  let thead = '<tr><th>#</th>' + SCHEMA.map(f=>`<th>${f.label}</th>`).join('') + '</tr>';
-  let tbody = '';
-  rows.forEach((r,i)=>{
-    const cls = classifyRow(r.canon);
-    tbody += `<tr data-i="${i}"><td class="rowidx">${i+1}</td>` +
-      SCHEMA.map(f=>`<td class="c-${cls[f.k]}" contenteditable="true" data-f="${f.k}">${escapeHtml(r.canon[f.k])}</td>`).join('') +
-      '</tr>';
-  });
-  tw.innerHTML = `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
-
-  tw.querySelectorAll('td[contenteditable]').forEach(td=>{
-    td.addEventListener('blur', onEdit);
-  });
-  updateStats();
-}
-
-function onEdit(e){
-  const td = e.target;
-  const tr = td.closest('tr');
-  const i = +tr.dataset.i;
-  const f = td.dataset.f;
-  rows[i].canon[f] = td.textContent.trim();
-  const cls = classifyRow(rows[i].canon);
-  tr.querySelectorAll('td[data-f]').forEach(cell=>{
-    const field = cell.dataset.f;
-    cell.className = 'c-' + cls[field];
-  });
-  updateStats();
-}
-
-function updateStats(){
-  let clean=0, errRows=0, suspRows=0;
-  rows.forEach(r=>{
-    const cls = classifyRow(r.canon);
-    const vals = Object.values(cls);
-    if(vals.includes('bad')) errRows++;
-    else if(vals.includes('susp')) suspRows++;
-    else clean++;
-  });
-  document.getElementById('stats').innerHTML =
-    `<span><b>${rows.length}</b> đơn</span>` +
-    `<span style="color:var(--ok)"><b>${clean}</b> sạch</span>` +
-    `<span style="color:var(--susp)"><b>${suspRows}</b> cần xem lại</span>` +
-    `<span style="color:var(--bad)"><b>${errRows}</b> thiếu/lỗi</span>`;
-}
-
-function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
-
-// Chuẩn hóa mọi kiểu ngày giờ cũ về DD/MM/YYYY HH:MM
-function parseFlexibleDateTime(str){
-  if(!str) return null;
-  str = String(str).trim(); if(!str) return null;
-  let m;
-  m = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/); // ISO
-  if(m) return {y:+m[1], mo:+m[2], d:+m[3], h:+m[4], mi:+m[5]};
-  m = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // HH:MM:SS DD/MM/YYYY
-  if(m) return {h:+m[1], mi:+m[2], d:+m[4], mo:+m[5], y:+m[6]};
-  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})\s+(\d{1,2}):(\d{2})$/); // DD/MM/YY HH:MM
-  if(m){ let yy=+m[3]; yy += yy<70?2000:1900; return {d:+m[1], mo:+m[2], y:yy, h:+m[4], mi:+m[5]}; }
-  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ ,]+(\d{1,2}):(\d{2})$/); // DD/MM/YYYY HH:MM (đã chuẩn)
-  if(m) return {d:+m[1], mo:+m[2], y:+m[3], h:+m[4], mi:+m[5]};
-  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // DD/MM/YYYY (không có giờ)
-  if(m) return {d:+m[1], mo:+m[2], y:+m[3], h:0, mi:0};
-  if(/^\d{10,14}$/.test(str)){ // epoch ms
-    const dt = new Date(Number(str));
-    if(!isNaN(dt.getTime())) return {y:dt.getUTCFullYear(), mo:dt.getUTCMonth()+1, d:dt.getUTCDate(), h:dt.getUTCHours(), mi:dt.getUTCMinutes()};
-  }
-  return null;
-}
-function fmtCanonicalDateTime(o){
-  const p2=n=>String(n).padStart(2,'0');
-  return `${p2(o.d)}/${p2(o.mo)}/${o.y} ${p2(o.h)}:${p2(o.mi)}`;
-}
-const DATE_FIELDS = ['date','fulfilledAt'];
-function normalizeAllDates(){
-  if(!rows.length){ alert('Chưa có dữ liệu. Dán JSON và bấm "Chuẩn hóa" trước.'); return; }
-  let changed = 0;
-  rows.forEach(r=>{
-    DATE_FIELDS.forEach(f=>{
-      const cur = r.canon[f];
-      if(!cur) return;
-      const parsed = parseFlexibleDateTime(cur);
-      if(parsed){
-        const out = fmtCanonicalDateTime(parsed);
-        if(out !== cur){ r.canon[f] = out; changed++; }
+      // Auto resolve createdTs if missing
+      if (!clean.createdTs) {
+        if (clean.date) {
+          clean.createdTs = parseDateStrToTs(clean.date);
+        } else if (clean.dateCreated) {
+          clean.createdTs = parseDateStrToTs(clean.dateCreated);
+        } else {
+          clean.createdTs = Date.now();
+        }
       }
-    });
-  });
-  render();
-  alert(`Đã chuẩn hóa ${changed} giá trị ngày giờ (date, fulfilledAt) về định dạng DD/MM/YYYY HH:MM.`);
-}
-document.getElementById('dateBtn').addEventListener('click', normalizeAllDates);
 
-function parseInput(text){
-  let data;
-  try{ data = JSON.parse(text); }
-  catch(err){ alert('JSON không hợp lệ: ' + err.message); return; }
-  if(!Array.isArray(data)){
-    if(typeof data==='object') data=[data]; else { alert('Cần một mảng (array) các order.'); return; }
-  }
-  rows = data.map(raw=>({canon: mapToCanon(raw)}));
-  try{ localStorage.setItem('onorm_last', text); }catch(e){}
-  render();
-}
+      // Auto resolve date & dateCreated if missing
+      if (clean.createdTs > 0) {
+        if (!clean.date) clean.date = tsToFullDateStr(clean.createdTs);
+        if (!clean.dateCreated) clean.dateCreated = tsToDateStr(clean.createdTs);
+      }
 
-document.getElementById('parseBtn').addEventListener('click', ()=>{
-  parseInput(document.getElementById('input').value);
-});
-document.getElementById('sampleClear').addEventListener('click', ()=>{
-  document.getElementById('input').value=''; rows=[]; render();
-  try{ localStorage.removeItem('onorm_last'); }catch(e){}
-});
-document.getElementById('fileInput').addEventListener('change', (e)=>{
-  const file = e.target.files[0]; if(!file) return;
-  const reader = new FileReader();
-  reader.onload = ()=>{ document.getElementById('input').value = reader.result; parseInput(reader.result); };
-  reader.readAsText(file);
-  document.getElementById('fileNote').textContent = file.name;
-});
+      clean.expDate = String(raw.expDate || "").trim();
+      clean.expFinal = Boolean(raw.expFinal !== undefined ? raw.expFinal : (clean.expDate ? true : false));
 
-function buildExportJson(){
-  const out = rows.map(r=>{
-    const o = {};
-    SCHEMA.forEach(f=>{
-      let v = r.canon[f.k];
-      if(['totalVnd','totalCny','days','qty','createdTs','daysLeft'].includes(f.k) && v!=='' && !isNaN(v)) v = Number(v);
-      else if(['needSupport','isUpgrade','expFinal'].includes(f.k) && (v==='true'||v==='false')) v = (v==='true');
-      o[f.k] = v;
-    });
-    return o;
-  });
-  return JSON.stringify(out, null, 2);
-}
+      clean.paidAt = (raw.paidAt !== "" && raw.paidAt !== null && raw.paidAt !== undefined && !isNaN(raw.paidAt)) ? Number(raw.paidAt) : "";
+      clean.fulfilledAt = (raw.fulfilledAt !== "" && raw.fulfilledAt !== null && raw.fulfilledAt !== undefined) ? raw.fulfilledAt : "";
 
-document.getElementById('exportBtn').addEventListener('click', ()=>{
-  const box = document.getElementById('exportBox');
-  document.getElementById('exportOut').value = buildExportJson();
-  box.style.display = box.style.display==='none' ? 'block':'none';
-});
-document.getElementById('copyBtn').addEventListener('click', async ()=>{
-  const json = buildExportJson();
-  try{ await navigator.clipboard.writeText(json); alert('Đã copy JSON.'); }
-  catch(e){ document.getElementById('exportOut').value=json; document.getElementById('exportBox').style.display='block'; }
-});
-document.getElementById('downloadBtn').addEventListener('click', ()=>{
-  const json = buildExportJson();
-  const blob = new Blob([json], {type:'application/json'});
-  const url = URL.createObjectURL(blob);
-  const a = document.createElement('a');
-  a.href = url; a.download = 'orders_normalized.json'; a.click();
-  URL.revokeObjectURL(url);
-});
+      // 5. System Routing & Sources
+      clean.workerUrl = String(raw.workerUrl || "").trim();
+      clean.sourceWeb = String(raw.sourceWeb || "").trim();
+      clean.orderType = String(raw.orderType || "new").trim();
+      clean.reason = String(raw.reason || "").trim();
 
-// Restore last session's pasted data, if any (per-device convenience only).
-try{
-  const last = localStorage.getItem('onorm_last');
-  if(last){ document.getElementById('input').value = last; parseInput(last); }
-}catch(e){}
-</script>
+      // 6. Subscription Links
+      clean.info1 = String(raw.info1 || "").trim();
+      clean.info2 = String(raw.info2 || "").trim();
+      clean.info3 = String(raw.info3 || "").trim();
+
+      // 7. CRITICAL FIX: lockInfo MUST be JSON Object {}
+      if (typeof raw.lockInfo === 'string') {
+        try {
+          const parsed = JSON.parse(raw.lockInfo);
+          clean.lockInfo = (parsed && typeof parsed === 'object' && !Array.isArray(parsed)) ? parsed : {};
+        } catch (e) {
+          clean.lockInfo = {};
+        }
+      } else if (raw.lockInfo && typeof raw.lockInfo === 'object' && !Array.isArray(raw.lockInfo)) {
+        clean.lockInfo = raw.lockInfo;
+      } else {
+        clean.lockInfo = {};
+      }
+
+      // 8. Other Locks & Upgrade status
+      clean.lockAuto = Boolean(raw.lockAuto);
+      clean.lockExpiry = Boolean(raw.lockExpiry);
+      clean.isUpgrade = Boolean(raw.isUpgrade);
+      clean.pendingUpgrade = (raw.pendingUpgrade && typeof raw.pendingUpgrade === 'object') ? raw.pendingUpgrade : null;
+      clean.upgradeStatus = raw.upgradeStatus ? String(raw.upgradeStatus) : null;
+
+      // Re-order strictly according to CANONICAL_KEYS
+      const ordered = {};
+      CANONICAL_KEYS.forEach(k => {
+        ordered[k] = clean[k] !== undefined ? clean[k] : "";
+      });
+      return ordered;
+    }
+
+    // Date Utilities
+    function tsToDateStr(ts) {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return "";
+      const day = String(d.getDate()).padStart(2, '0');
+      const mon = String(d.getMonth() + 1).padStart(2, '0');
+      return `${day}/${mon}/${d.getFullYear()}`;
+    }
+
+    function tsToFullDateStr(ts) {
+      const d = new Date(ts);
+      if (isNaN(d.getTime())) return "";
+      const day = String(d.getDate()).padStart(2, '0');
+      const mon = String(d.getMonth() + 1).padStart(2, '0');
+      const h = String(d.getHours()).padStart(2, '0');
+      const m = String(d.getMinutes()).padStart(2, '0');
+      return `${day}/${mon}/${d.getFullYear()} ${h}:${m}`;
+    }
+
+    function parseDateStrToTs(str) {
+      if (!str) return 0;
+      const parts = str.trim().split(" ");
+      const dParts = parts[0].split("/");
+      if (dParts.length < 3) return 0;
+      const day = parseInt(dParts[0]);
+      const mon = parseInt(dParts[1]) - 1;
+      const yr = parseInt(dParts[2]);
+      let hr = 0, min = 0;
+      if (parts[1]) {
+        const tParts = parts[1].split(":");
+        hr = parseInt(tParts[0]) || 0;
+        min = parseInt(tParts[1]) || 0;
+      }
+      const d = new Date(yr, mon, day, hr, min);
+      return isNaN(d.getTime()) ? 0 : d.getTime();
+    }
+
+    function addDaysToDmy(dmyStr, numDays) {
+      if (!dmyStr || isNaN(numDays)) return "";
+      const ts = parseDateStrToTs(dmyStr);
+      if (!ts) return "";
+      const d = new Date(ts);
+      d.setDate(d.getDate() + Number(numDays));
+      return tsToDateStr(d.getTime());
+    }
+
+    // ==========================================
+    // 3. UI RENDERING & DATA HANDLING
+    // ==========================================
+    function parseAndLoadJson() {
+      const raw = document.getElementById('rawJsonInput').value.trim();
+      if (!raw) {
+        showToast("Vui lòng dán dữ liệu JSON trước!", "error");
+        return;
+      }
+      try {
+        let parsed = JSON.parse(raw);
+        if (!Array.isArray(parsed)) {
+          if (parsed && typeof parsed === 'object') {
+            parsed = [parsed];
+          } else {
+            throw new Error("Dữ liệu không phải là mảng hoặc đối tượng JSON");
+          }
+        }
+        orders = parsed.map(normalizeOrder);
+        selectedIndices.clear();
+        renderTable();
+        updateStats();
+        showToast(`Đã tải thành công ${orders.length} đơn hàng!`, "success");
+        // Auto hide input panel if more than 0 orders
+        if (orders.length > 0) {
+          document.getElementById('inputPanel').classList.add('hidden');
+        }
+      } catch (e) {
+        showToast("Lỗi cú pháp JSON: " + e.message, "error");
+      }
+    }
+
+    function renderTable() {
+      const tbody = document.getElementById('sheetBody');
+      const empty = document.getElementById('emptyState');
+      const search = document.getElementById('searchInput').value.trim().toLowerCase();
+      const statusFilter = document.getElementById('statusFilter').value;
+
+      if (!orders || orders.length === 0) {
+        tbody.innerHTML = "";
+        empty.classList.remove('hidden');
+        return;
+      }
+      empty.classList.add('hidden');
+
+      let html = "";
+      orders.forEach((o, idx) => {
+        // Validation check
+        const warnings = [];
+        if (!o.id) warnings.push("Thiếu mã đơn");
+        if (typeof o.lockInfo !== 'object' || Array.isArray(o.lockInfo)) warnings.push("lockInfo sai type");
+        if (o.days && !o.expDate) warnings.push("Chưa tính hạn dùng");
+
+        // Filter check
+        if (statusFilter === 'warning' && warnings.length === 0) return;
+        if (statusFilter !== 'all' && statusFilter !== 'warning' && o.status !== statusFilter) return;
+
+        if (search) {
+          const match = (o.id && o.id.toLowerCase().includes(search)) ||
+                        (o.email && o.email.toLowerCase().includes(search)) ||
+                        (o.pkgName && o.pkgName.toLowerCase().includes(search)) ||
+                        (o.pkgId && o.pkgId.toLowerCase().includes(search));
+          if (!match) return;
+        }
+
+        const isChecked = selectedIndices.has(idx);
+
+        // Status Badge
+        let statusBadge = "";
+        if (o.status === 'success') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-emerald-100 text-emerald-700 dark:bg-emerald-950/60 dark:text-emerald-300 border border-emerald-300 dark:border-emerald-800">success</span>';
+        } else if (o.status === 'pending') {
+          statusBadge = '<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-amber-100 text-amber-700 dark:bg-amber-950/60 dark:text-amber-300 border border-amber-300 dark:border-amber-800">pending</span>';
+        } else {
+          statusBadge = `<span class="px-2 py-0.5 rounded-full text-[10px] font-bold bg-rose-100 text-rose-700 dark:bg-rose-950/60 dark:text-rose-300 border border-rose-300 dark:border-rose-800">${o.status || 'failed'}</span>`;
+        }
+
+        // Lock info label
+        const lockCount = Object.keys(o.lockInfo || {}).length;
+        const lockBadge = lockCount > 0
+          ? `<span class="px-1.5 py-0.5 rounded bg-blue-100 dark:bg-blue-950/60 text-blue-700 dark:text-blue-300 font-mono text-[10px] border border-blue-200 dark:border-blue-800" title='${JSON.stringify(o.lockInfo)}'><i class="fa-solid fa-lock text-[9px]"></i> ${lockCount} khóa</span>`
+          : `<span class="text-slate-400 font-mono text-[10px]">{} (mở)</span>`;
+
+        html += `
+          <tr class="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors group">
+            <td class="p-2 text-center sticky-col-1 bg-white dark:bg-slate-900 group-hover:bg-blue-50/50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-800">
+              <input type="checkbox" onchange="toggleSelectRow(${idx}, this)" ${isChecked ? 'checked' : ''} class="rounded text-blue-600 focus:ring-0 cursor-pointer">
+            </td>
+            <td class="p-2 text-center sticky-col-2 bg-white dark:bg-slate-900 group-hover:bg-blue-50/50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-800 text-slate-400 font-mono text-[11px]">
+              ${idx + 1}
+            </td>
+            <td class="p-2 sticky-col-3 bg-white dark:bg-slate-900 group-hover:bg-blue-50/50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
+              <span>${o.id || '<i class="text-rose-500 font-normal">Chưa có ID</i>'}</span>
+              ${warnings.length > 0 ? `<i class="fa-solid fa-triangle-exclamation text-rose-500 text-[11px]" title="${warnings.join(', ')}"></i>` : ''}
+            </td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800">${statusBadge}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 font-mono text-slate-600 dark:text-slate-300 max-w-[200px] truncate" title="${o.email}">${o.email || '<span class="text-slate-300 dark:text-slate-600">—</span>'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">${o.method || '—'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 font-mono text-slate-700 dark:text-slate-300">${o.pkgId || o.pkgName || '—'}</td>
+            <td class="p-2 text-right border-r border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-white">${o.totalVnd ? Number(o.totalVnd).toLocaleString('vi-VN') + 'đ' : '—'}</td>
+            <td class="p-2 text-center border-r border-slate-200 dark:border-slate-800 font-mono">${o.days || '—'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 font-mono text-slate-500 text-[11px]">${o.date || o.dateCreated || '—'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 font-mono font-semibold text-emerald-600 dark:text-emerald-400 text-[11px]">${o.expDate || '—'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800">${lockBadge}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 font-mono text-slate-400 text-[10px] max-w-[150px] truncate" title="${o.workerUrl}">${o.workerUrl || '—'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 text-slate-600 dark:text-slate-400">${o.orderType || 'new'}</td>
+            <td class="p-2 text-center border-r border-slate-200 dark:border-slate-800 font-mono">${o.needSupport ? '<span class="text-rose-500 font-bold">Có</span>' : '<span class="text-slate-400">Không</span>'}</td>
+            <td class="p-2 border-r border-slate-200 dark:border-slate-800 font-mono text-slate-400 text-[10px] max-w-[150px] truncate">
+              ${o.info1 ? 'L1 ' : ''}${o.info2 ? 'L2 ' : ''}${o.info3 ? 'L3' : ''}
+              ${(!o.info1 && !o.info2 && !o.info3) ? '<span class="text-slate-300 dark:text-slate-700">Chưa có link</span>' : ''}
+            </td>
+            <td class="p-2 text-center">
+              <div class="flex items-center justify-center gap-1.5">
+                <button onclick="openEditModal(${idx})" class="p-1 rounded text-blue-600 hover:bg-blue-100 dark:hover:bg-blue-900/50" title="Chỉnh sửa chi tiết">
+                  <i class="fa-solid fa-pen"></i>
+                </button>
+                <button onclick="duplicateRow(${idx})" class="p-1 rounded text-slate-500 hover:bg-slate-100 dark:hover:bg-slate-800" title="Nhân đôi dòng">
+                  <i class="fa-regular fa-copy"></i>
+                </button>
+                <button onclick="deleteRow(${idx})" class="p-1 rounded text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50" title="Xóa dòng">
+                  <i class="fa-solid fa-trash"></i>
+                </button>
+              </div>
+            </td>
+          </tr>
+        `;
+      });
+      tbody.innerHTML = html;
+    }
+
+    function updateStats() {
+      const total = orders.length;
+      let success = 0, pending = 0, warnings = 0, totalVnd = 0, totalCny = 0;
+
+      orders.forEach(o => {
+        if (o.status === 'success') success++;
+        else if (o.status === 'pending') pending++;
+
+        if (!o.id || typeof o.lockInfo !== 'object' || (o.days && !o.expDate)) {
+          warnings++;
+        }
+        if (typeof o.totalVnd === 'number') totalVnd += o.totalVnd;
+        if (typeof o.totalCny === 'number') totalCny += o.totalCny;
+      });
+
+      document.getElementById('statTotal').innerText = total;
+      document.getElementById('statSuccess').innerText = success;
+      document.getElementById('statPending').innerText = pending;
+      document.getElementById('statWarning').innerText = warnings;
+      document.getElementById('statVnd').innerText = totalVnd.toLocaleString('vi-VN') + 'đ';
+
+      if (totalCny > 0) {
+        document.getElementById('statCnyWrap').classList.remove('hidden');
+        document.getElementById('statCny').innerText = totalCny.toLocaleString('zh-CN') + '¥';
+      } else {
+        document.getElementById('statCnyWrap').classList.add('hidden');
+      }
+
+      // KV Size estimation
+      const jsonStr = JSON.stringify(orders);
+      const bytes = new Blob([jsonStr]).size;
+      const kb = (bytes / 1024).toFixed(2);
+      document.getElementById('statKvSize').innerText = `${kb} KB`;
+    }
+
+    // ==========================================
+    // 4. BATCH ACTIONS & AUTO-FIX ENGINE
+    // ==========================================
+    function autoFixAll() {
+      if (orders.length === 0) {
+        showToast("Không có đơn hàng nào để chuẩn hóa!", "error");
+        return;
+      }
+      let fixedCount = 0;
+      orders = orders.map((o, idx) => {
+        const before = JSON.stringify(o);
+        const fixed = normalizeOrder(o);
+
+        // Auto generate ID if missing
+        if (!fixed.id) {
+          fixed.id = "DH" + Math.random().toString(36).substring(2, 10).toUpperCase();
+        }
+
+        // Auto calculate expDate if missing
+        if (!fixed.expDate && fixed.days && fixed.dateCreated) {
+          fixed.expDate = addDaysToDmy(fixed.dateCreated, fixed.days);
+        }
+
+        if (before !== JSON.stringify(fixed)) fixedCount++;
+        return fixed;
+      });
+
+      renderTable();
+      updateStats();
+      showToast(`Đã tự động chuẩn hóa toàn diện! (${fixedCount} đơn đã được cập nhật)`, "success");
+    }
+
+    function syncAllDates() {
+      if (orders.length === 0) return;
+      let count = 0;
+      orders.forEach(o => {
+        if (!o.dateCreated && o.createdTs) {
+          o.dateCreated = tsToDateStr(o.createdTs);
+          count++;
+        }
+        if (!o.date && o.createdTs) {
+          o.date = tsToFullDateStr(o.createdTs);
+          count++;
+        }
+        if (o.days && (!o.expDate || o.expDate === '—') && o.dateCreated) {
+          o.expDate = addDaysToDmy(o.dateCreated, o.days);
+          count++;
+        }
+      });
+      renderTable();
+      updateStats();
+      showToast(`Đã đồng bộ ngày tháng cho các đơn hàng!`, "success");
+    }
+
+    function fixLockInfoAll() {
+      if (orders.length === 0) return;
+      let count = 0;
+      orders.forEach(o => {
+        if (typeof o.lockInfo === 'string') {
+          try {
+            const p = JSON.parse(o.lockInfo);
+            o.lockInfo = (p && typeof p === 'object' && !Array.isArray(p)) ? p : {};
+          } catch(e) {
+            o.lockInfo = {};
+          }
+          count++;
+        } else if (!o.lockInfo || typeof o.lockInfo !== 'object' || Array.isArray(o.lockInfo)) {
+          o.lockInfo = {};
+          count++;
+        }
+      });
+      renderTable();
+      updateStats();
+      showToast(`Đã chuẩn hóa lockInfo về Object {} cho toàn bộ đơn!`, "success");
+    }
+
+    // ==========================================
+    // 5. EXPORT & CLOUDFLARE KV 1-LINE ENGINE
+    // ==========================================
+    function getMinifiedJson() {
+      // Clean re-ordered objects
+      const cleanOrders = orders.map(normalizeOrder);
+      return JSON.stringify(cleanOrders);
+    }
+
+    function copyMinifiedJson() {
+      if (orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      const minJson = getMinifiedJson();
+      navigator.clipboard.writeText(minJson).then(() => {
+        showToast("ĐÃ COPY JSON 1 DÒNG! Sẵn sàng dán trực tiếp vào KV.", "success");
+      }).catch(err => {
+        // Fallback for older browsers
+        const ta = document.createElement("textarea");
+        ta.value = minJson;
+        document.body.appendChild(ta);
+        ta.select();
+        document.execCommand("copy");
+        document.body.removeChild(ta);
+        showToast("Đã copy JSON 1 dòng vào Clipboard!", "success");
+      });
+    }
+
+    function downloadJsonFile() {
+      if (orders.length === 0) {
+        showToast("Không có dữ liệu để tải xuống!", "error");
+        return;
+      }
+      const minJson = getMinifiedJson();
+      const blob = new Blob([minJson], { type: "application/json" });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = `ALL_ORDERS_KV_${new Date().toISOString().slice(0, 10)}.json`;
+      document.body.appendChild(a);
+      a.click();
+      document.body.removeChild(a);
+      URL.revokeObjectURL(url);
+      showToast("Đã tải xuống tệp JSON!", "success");
+    }
+
+    // JSON PREVIEW MODAL
+    function openJsonModal() {
+      const modal = document.getElementById('jsonModal');
+      const ta = document.getElementById('modalJsonOutput');
+      const stats = document.getElementById('modalStats');
+      const btnFormat = document.getElementById('btnToggleFormat');
+
+      isPrettyMode = false;
+      const cleanOrders = orders.map(normalizeOrder);
+      const jsonStr = JSON.stringify(cleanOrders);
+      ta.value = jsonStr;
+
+      const bytes = new Blob([jsonStr]).size;
+      stats.innerText = `${cleanOrders.length} đơn · ${(bytes/1024).toFixed(2)} KB`;
+      btnFormat.innerHTML = '<i class="fa-solid fa-indent"></i> Chuyển sang Dạng đẹp (2 spaces)';
+
+      modal.classList.remove('hidden');
+    }
+
+    function toggleJsonFormatMode() {
+      const ta = document.getElementById('modalJsonOutput');
+      const btnFormat = document.getElementById('btnToggleFormat');
+      const cleanOrders = orders.map(normalizeOrder);
+
+      isPrettyMode = !isPrettyMode;
+      if (isPrettyMode) {
+        ta.value = JSON.stringify(cleanOrders, null, 2);
+        btnFormat.innerHTML = '<i class="fa-solid fa-compress"></i> Chuyển về 1 Dòng (Minified)';
+      } else {
+        ta.value = JSON.stringify(cleanOrders);
+        btnFormat.innerHTML = '<i class="fa-solid fa-indent"></i> Chuyển sang Dạng đẹp (2 spaces)';
+      }
+    }
+
+    function copyModalJson() {
+      const ta = document.getElementById('modalJsonOutput');
+      navigator.clipboard.writeText(ta.value).then(() => {
+        showToast("Đã sao chép nội dung JSON!", "success");
+      });
+    }
+
+    function closeJsonModal() {
+      document.getElementById('jsonModal').classList.add('hidden');
+    }
+
+    // ==========================================
+    // 6. ROW SELECTION & ACTIONS
+    // ==========================================
+    function toggleSelectRow(idx, cb) {
+      if (cb.checked) {
+        selectedIndices.add(idx);
+      } else {
+        selectedIndices.delete(idx);
+      }
+      updateSelectionBar();
+    }
+
+    function toggleSelectAll(cb) {
+      if (cb.checked) {
+        orders.forEach((_, idx) => selectedIndices.add(idx));
+      } else {
+        selectedIndices.clear();
+      }
+      renderTable();
+      updateSelectionBar();
+    }
+
+    function updateSelectionBar() {
+      const bar = document.getElementById('btnDeleteSelected');
+      const cnt = document.getElementById('selectedCount');
+      if (selectedIndices.size > 0) {
+        bar.classList.remove('hidden');
+        bar.classList.add('flex');
+        cnt.innerText = selectedIndices.size;
+      } else {
+        bar.classList.add('hidden');
+        bar.classList.remove('flex');
+      }
+    }
+
+    function deleteSelectedRows() {
+      if (!confirm(`Bạn có chắc muốn xóa ${selectedIndices.size} dòng đã chọn?`)) return;
+      orders = orders.filter((_, idx) => !selectedIndices.has(idx));
+      selectedIndices.clear();
+      renderTable();
+      updateStats();
+      updateSelectionBar();
+      showToast("Đã xóa các dòng đã chọn!", "success");
+    }
+
+    function addNewRow() {
+      const newOrder = normalizeOrder({
+        id: "DH" + Math.random().toString(36).substring(2, 10).toUpperCase(),
+        createdTs: Date.now(),
+        date: tsToFullDateStr(Date.now()),
+        dateCreated: tsToDateStr(Date.now()),
+        status: "pending",
+        orderType: "new",
+        qty: 1,
+        lockInfo: {}
+      });
+      orders.unshift(newOrder);
+      renderTable();
+      updateStats();
+      showToast("Đã thêm một đơn mới ở đầu bảng!", "success");
+    }
+
+    function duplicateRow(idx) {
+      const clone = JSON.parse(JSON.stringify(orders[idx]));
+      clone.id = "DH" + Math.random().toString(36).substring(2, 10).toUpperCase();
+      orders.splice(idx + 1, 0, clone);
+      renderTable();
+      updateStats();
+      showToast("Đã nhân đôi dòng đơn hàng!", "success");
+    }
+
+    function deleteRow(idx) {
+      if (!confirm(`Xóa đơn hàng ${orders[idx].id || `#${idx+1}`}?`)) return;
+      orders.splice(idx, 1);
+      selectedIndices.delete(idx);
+      renderTable();
+      updateStats();
+      updateSelectionBar();
+      showToast("Đã xóa đơn hàng!", "success");
+    }
+
+    // ==========================================
+    // 7. EDIT MODAL FOR INDIVIDUAL ROW
+    // ==========================================
+    function openEditModal(idx) {
+      const o = orders[idx];
+      document.getElementById('editRowIndex').value = idx;
+      document.getElementById('editModalId').innerText = o.id || `#${idx+1}`;
+      document.getElementById('editId').value = o.id || "";
+      document.getElementById('editStatus').value = o.status || "pending";
+      document.getElementById('editEmail').value = o.email || "";
+      document.getElementById('editMethod').value = o.method || "";
+      document.getElementById('editPkgId').value = o.pkgId || "";
+      document.getElementById('editPkgName').value = o.pkgName || "";
+      document.getElementById('editTotalVnd').value = o.totalVnd || "";
+      document.getElementById('editDays').value = o.days || "";
+      document.getElementById('editDateCreated').value = o.dateCreated || "";
+      document.getElementById('editExpDate').value = o.expDate || "";
+      document.getElementById('editWorkerUrl').value = o.workerUrl || "";
+
+      // Check lockInfo
+      const l = o.lockInfo || {};
+      document.getElementById('editLockInfo1').checked = Boolean(l.info1);
+      document.getElementById('editLockInfo2').checked = Boolean(l.info2);
+      document.getElementById('editLockInfo3').checked = Boolean(l.info3);
+
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function saveEditModal() {
+      const idx = parseInt(document.getElementById('editRowIndex').value);
+      if (isNaN(idx) || !orders[idx]) return;
+
+      const o = orders[idx];
+      o.id = document.getElementById('editId').value.trim().toUpperCase();
+      o.status = document.getElementById('editStatus').value;
+      o.email = document.getElementById('editEmail').value.trim().toLowerCase();
+      o.method = document.getElementById('editMethod').value.trim();
+      o.pkgId = document.getElementById('editPkgId').value.trim();
+      o.pkgName = document.getElementById('editPkgName').value.trim();
+      
+      const v = document.getElementById('editTotalVnd').value;
+      o.totalVnd = v !== "" ? Number(v) : "";
+
+      const d = document.getElementById('editDays').value;
+      o.days = d !== "" ? Number(d) : "";
+
+      o.dateCreated = document.getElementById('editDateCreated').value.trim();
+      o.expDate = document.getElementById('editExpDate').value.trim();
+      o.workerUrl = document.getElementById('editWorkerUrl').value.trim();
+
+      // lockInfo
+      const l1 = document.getElementById('editLockInfo1').checked;
+      const l2 = document.getElementById('editLockInfo2').checked;
+      const l3 = document.getElementById('editLockInfo3').checked;
+      const lockObj = {};
+      if (l1) lockObj.info1 = true;
+      if (l2) lockObj.info2 = true;
+      if (l3) lockObj.info3 = true;
+      o.lockInfo = lockObj;
+
+      orders[idx] = normalizeOrder(o);
+      closeEditModal();
+      renderTable();
+      updateStats();
+      showToast("Đã lưu thông tin đơn hàng!", "success");
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    // ==========================================
+    // 8. GENERAL UTILITIES (PANEL, TOAST, THEME)
+    // ==========================================
+    function toggleInputPanel() {
+      const p = document.getElementById('inputPanel');
+      p.classList.toggle('hidden');
+    }
+
+    function clearInput() {
+      document.getElementById('rawJsonInput').value = "";
+    }
+
+    function showToast(msg, type = 'info') {
+      const toast = document.getElementById('toast');
+      const msgEl = document.getElementById('toastMsg');
+      const icon = document.getElementById('toastIcon');
+
+      msgEl.innerText = msg;
+      if (type === 'success') {
+        icon.className = "fa-solid fa-circle-check text-emerald-400";
+      } else if (type === 'error') {
+        icon.className = "fa-solid fa-circle-exclamation text-rose-400";
+      } else {
+        icon.className = "fa-solid fa-circle-info text-blue-400";
+      }
+
+      toast.classList.remove('translate-y-20', 'opacity-0', 'pointer-events-none');
+      clearTimeout(window._toastTimer);
+      window._toastTimer = setTimeout(() => {
+        toast.classList.add('translate-y-20', 'opacity-0', 'pointer-events-none');
+      }, 3500);
+    }
+
+    function toggleDarkMode() {
+      document.documentElement.classList.toggle('dark');
+      const isDark = document.documentElement.classList.contains('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+
+    // Auto set theme on load
+    if (localStorage.getItem('theme') === 'dark' || (!localStorage.getItem('theme') && window.matchMedia('(prefers-color-scheme: dark)').matches)) {
+      document.documentElement.classList.add('dark');
+    }
+
+    // Initialize with empty state
+    renderTable();
+    updateStats();
+  </script>
 </body>
 </html>
