@@ -1,0 +1,378 @@
+<!DOCTYPE html>
+<html lang="vi">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<title>Chuẩn hóa Schema Đơn Hàng</title>
+<style>
+:root{
+  --bg:#10131a; --panel:#171b25; --panel2:#1d2230; --border:#2a3040;
+  --text:#e7eaf1; --muted:#8890a1; --accent:#5b8cff;
+  --ok:#2fb872; --ok-bg:#173626; --warn:#d99a2b; --warn-bg:#332608;
+  --bad:#e5555f; --bad-bg:#3a1418; --susp:#e2812f; --susp-bg:#3a230c;
+  --na-bg:#1a1e29; --na-text:#5b6376;
+  box-sizing:border-box; padding-top:env(safe-area-inset-top,0px); padding-bottom:env(safe-area-inset-bottom,0px);
+}
+@media (prefers-color-scheme: light){
+  :root:not([data-theme="dark"]){
+    --bg:#f4f5f8; --panel:#fff; --panel2:#eef0f4; --border:#dadde3;
+    --text:#171a21; --muted:#666e7d; --na-bg:#eef0f4; --na-text:#9aa1ad;
+  }
+}
+*{box-sizing:border-box;}
+html,body{height:100%;}
+body{
+  margin:0; background:var(--bg); color:var(--text);
+  font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,sans-serif;
+}
+.wrap{max-width:100%; padding:16px; padding-top:calc(16px + env(safe-area-inset-top,0px));}
+h1{font-size:1.15rem; font-weight:650; margin:0 0 2px;}
+.sub{color:var(--muted); font-size:.85rem; margin:0 0 16px;}
+.panel{background:var(--panel); border:1px solid var(--border); border-radius:10px; padding:14px; margin-bottom:14px;}
+textarea{
+  width:100%; min-height:110px; background:var(--panel2); color:var(--text);
+  border:1px solid var(--border); border-radius:8px; padding:10px;
+  font:12px/1.5 ui-monospace,SFMono-Regular,Menlo,Consolas,monospace; resize:vertical;
+}
+.row{display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-top:10px;}
+button{
+  background:var(--accent); color:#fff; border:none; border-radius:7px;
+  padding:9px 14px; font-size:.85rem; font-weight:600; cursor:pointer;
+}
+button.ghost{background:transparent; color:var(--text); border:1px solid var(--border);}
+button:active{opacity:.8;}
+.stats{display:flex; gap:14px; flex-wrap:wrap; font-size:.8rem; color:var(--muted);}
+.dot{display:inline-block; width:8px; height:8px; border-radius:50%; margin-right:5px; vertical-align:1px;}
+.legend{display:flex; gap:14px; flex-wrap:wrap; font-size:.78rem; color:var(--muted); margin-top:8px;}
+.tablewrap{overflow:auto; border:1px solid var(--border); border-radius:10px; max-height:70vh;}
+table{border-collapse:collapse; font-size:12.5px; width:max-content; min-width:100%;}
+th,td{
+  padding:6px 8px; border-bottom:1px solid var(--border); border-right:1px solid var(--border);
+  white-space:nowrap; font-family:ui-monospace,SFMono-Regular,Menlo,Consolas,monospace;
+}
+th{
+  position:sticky; top:0; background:var(--panel2); color:var(--muted);
+  font-weight:600; text-align:left; z-index:2; font-family:-apple-system,sans-serif;
+}
+td:first-child, th:first-child{position:sticky; left:0; z-index:1; background:var(--panel2);}
+td[contenteditable]{outline:none; cursor:text; min-width:70px; max-width:220px; overflow:hidden; text-overflow:ellipsis;}
+td[contenteditable]:focus{box-shadow:inset 0 0 0 2px var(--accent); overflow:visible; white-space:normal;}
+.c-ok{background:var(--ok-bg); color:var(--ok);}
+.c-warn{background:var(--warn-bg); color:var(--warn);}
+.c-bad{background:var(--bad-bg); color:var(--bad);}
+.c-susp{background:var(--susp-bg); color:var(--susp);}
+.c-na{background:var(--na-bg); color:var(--na-text);}
+.rowidx{color:var(--muted); background:var(--panel2)!important; text-align:right;}
+#exportBox{display:none;}
+#exportBox textarea{min-height:220px;}
+.empty{color:var(--muted); font-size:.85rem; padding:20px; text-align:center;}
+</style>
+</head>
+<body>
+<div class="wrap">
+  <h1>Chuẩn hóa schema đơn hàng</h1>
+  <p class="sub">Dán JSON KV (mảng order) vào ô bên dưới. Tool sẽ áp schema cố định lên từng đơn, tô màu theo mức độ thiếu/sai, cho sửa trực tiếp trong bảng, rồi xuất lại JSON chuẩn. Đã bỏ 2 cột trùng lặp/không dùng tới trong code (dateCreated, daysLeft) — 4 file code chỉ đọc <code>date</code> (chuỗi hiển thị) và <code>createdTs</code> (epoch ms) để tính thời gian, còn <code>dateCreated</code> không được đọc lại ở đâu và <code>daysLeft</code> luôn được tính lại tại chỗ chứ không lưu. "Chuẩn hóa ngày giờ" gộp mọi kiểu cũ (HH:MM:SS DD/MM/YYYY, DD/MM/YY HH:MM, ISO, epoch...) trong 2 cột <code>date</code> và <code>fulfilledAt</code> về đúng 1 kiểu DD/MM/YYYY HH:MM.</p>
+
+  <div class="panel">
+    <textarea id="input" placeholder="Dán mảng JSON các order vào đây..."></textarea>
+    <div class="row">
+      <button id="parseBtn">Chuẩn hóa</button>
+      <button class="ghost" id="dateBtn">Chuẩn hóa ngày giờ</button>
+      <button class="ghost" id="sampleClear">Xóa</button>
+      <label class="ghost" style="border:1px solid var(--border); border-radius:7px; padding:9px 14px; font-size:.85rem; cursor:pointer;">
+        Tải file .json<input type="file" id="fileInput" accept=".json" style="display:none;">
+      </label>
+      <span class="sub" id="fileNote"></span>
+    </div>
+  </div>
+
+  <div class="panel" id="statsPanel" style="display:none;">
+    <div class="stats" id="stats"></div>
+    <div class="legend">
+      <span><span class="dot" style="background:var(--ok)"></span>Hợp lệ</span>
+      <span><span class="dot" style="background:var(--warn)"></span>Thiếu (cảnh báo)</span>
+      <span><span class="dot" style="background:var(--bad)"></span>Thiếu/sai (lỗi)</span>
+      <span><span class="dot" style="background:var(--susp)"></span>Nghi ngờ mâu thuẫn</span>
+      <span><span class="dot" style="background:var(--na-text)"></span>Không bắt buộc, trống</span>
+    </div>
+    <div class="row">
+      <button id="exportBtn">Xuất JSON</button>
+      <button class="ghost" id="copyBtn">Copy JSON</button>
+      <button class="ghost" id="downloadBtn">Tải file .json</button>
+    </div>
+    <div id="exportBox"><textarea id="exportOut" readonly></textarea></div>
+  </div>
+
+  <div class="tablewrap" id="tableWrap"><div class="empty">Chưa có dữ liệu. Dán JSON và bấm "Chuẩn hóa".</div></div>
+</div>
+
+<script>
+// Fixed canonical schema — aggregated from every field seen across the order KV store.
+const SCHEMA = [
+  {k:'id', label:'ID', lvl:'req'},
+  {k:'email', label:'Email', lvl:'req'},
+  {k:'nickname', label:'Tên KH', lvl:'warn'},
+  {k:'zalo', label:'Zalo', lvl:'warn'},
+  {k:'method', label:'PT thanh toán', lvl:'req'},
+  {k:'pkgId', label:'Mã gói', lvl:'warn'},
+  {k:'pkgName', label:'Tên gói', lvl:'req'},
+  {k:'pkgData', label:'Dung lượng', lvl:'req'},
+  {k:'pkg', label:'Gói (mô tả)', lvl:'req'},
+  {k:'qty', label:'SL', lvl:'warn'},
+  {k:'days', label:'Số ngày', lvl:'req'},
+  {k:'totalVnd', label:'Tiền VND', lvl:'cond'},
+  {k:'totalCny', label:'Tiền CNY', lvl:'cond'},
+  {k:'status', label:'Trạng thái', lvl:'status'},
+  {k:'date', label:'Ngày tạo', lvl:'req'},
+  {k:'createdTs', label:'Timestamp', lvl:'info'},
+  {k:'expDate', label:'Ngày hết hạn', lvl:'warn'},
+  {k:'fulfilledAt', label:'TG xử lý', lvl:'info'},
+  {k:'needSupport', label:'Cần hỗ trợ', lvl:'flag'},
+  {k:'reason', label:'Lý do lỗi', lvl:'reason'},
+  {k:'info1', label:'Info1', lvl:'info'},
+  {k:'info2', label:'Info2', lvl:'info'},
+  {k:'info3', label:'Info3', lvl:'info'},
+  {k:'orderType', label:'Loại đơn', lvl:'info'},
+  {k:'expFinal', label:'Exp Final', lvl:'info'},
+  {k:'isUpgrade', label:'Nâng cấp?', lvl:'info'},
+  {k:'pendingUpgrade', label:'Chờ nâng cấp', lvl:'info'},
+  {k:'upgradeStatus', label:'TT nâng cấp', lvl:'info'},
+  {k:'lockInfo', label:'Khóa', lvl:'info'},
+];
+// Alternate key names a source file might use — mapped into the fixed schema, never used to add columns.
+const ALIASES = {
+  totalVnd:['totalVnd','total_vnd','total','amount','price'],
+  totalCny:['totalCny','total_cny'],
+  pkgData:['pkgData','data'],
+  pkgName:['pkgName','package_name'],
+  zalo:['zalo','zaloId'],
+  method:['method','payment_method'],
+  nickname:['nickname','name','customer_name'],
+};
+function aliasesFor(k){ return ALIASES[k] || [k]; }
+function toStr(v){ if(v===undefined||v===null) return ''; if(typeof v==='object') return JSON.stringify(v); return String(v); }
+
+let rows = []; // {canon:{field:string}}
+
+function mapToCanon(raw){
+  const canon = {};
+  SCHEMA.forEach(f=>{
+    let val;
+    for(const a of aliasesFor(f.k)){ if(raw[a]!==undefined){ val = raw[a]; break; } }
+    canon[f.k] = toStr(val);
+  });
+  return canon;
+}
+
+function classifyRow(canon){
+  const cls = {};
+  const method = (canon.method||'').toLowerCase();
+  const isForeign = /alipay|weixin|wechat/.test(method);
+  const status = (canon.status||'').toLowerCase();
+
+  SCHEMA.forEach(f=>{
+    const empty = canon[f.k]==='';
+    if(f.lvl==='req') cls[f.k] = empty ? 'bad' : 'ok';
+    else if(f.lvl==='warn') cls[f.k] = empty ? 'warn' : 'ok';
+    else if(f.lvl==='info') cls[f.k] = empty ? 'na' : 'ok';
+    else cls[f.k] = 'na';
+  });
+
+  // Conditional currency: VN bank/manual orders require totalVnd; Alipay/Weixin require totalCny.
+  const vndEmpty = canon.totalVnd==='';
+  const cnyEmpty = canon.totalCny==='';
+  if(isForeign){
+    cls.totalCny = cnyEmpty ? 'bad' : 'ok';
+    cls.totalVnd = vndEmpty ? 'na' : 'susp';
+  } else {
+    cls.totalVnd = vndEmpty ? 'bad' : 'ok';
+    cls.totalCny = cnyEmpty ? 'na' : 'susp';
+  }
+
+  // Status: failed/empty flagged red, success green, anything else amber.
+  if(status==='') cls.status='bad';
+  else if(status==='failed') cls.status='bad';
+  else if(status==='success') cls.status='ok';
+  else cls.status='warn';
+
+  // Failed orders should carry a reason.
+  if(canon.reason!=='') cls.reason='ok';
+  else cls.reason = (status==='failed') ? 'susp' : 'na';
+
+  // needSupport true is a flag worth a look, not an error.
+  cls.needSupport = (canon.needSupport==='true') ? 'susp' : 'na';
+
+  // pkg description vs pkgData GB mismatch.
+  const pkgGB = (canon.pkg||'').match(/(\d+)\s*GB/i);
+  const dataGB = (canon.pkgData||'').match(/(\d+)\s*GB/i);
+  if(pkgGB && dataGB && pkgGB[1]!==dataGB[1]) cls.pkgData='susp';
+
+  return cls;
+}
+
+function render(){
+  const tw = document.getElementById('tableWrap');
+  if(!rows.length){ tw.innerHTML='<div class="empty">Chưa có dữ liệu. Dán JSON và bấm "Chuẩn hóa".</div>'; document.getElementById('statsPanel').style.display='none'; return; }
+  document.getElementById('statsPanel').style.display='block';
+
+  let thead = '<tr><th>#</th>' + SCHEMA.map(f=>`<th>${f.label}</th>`).join('') + '</tr>';
+  let tbody = '';
+  rows.forEach((r,i)=>{
+    const cls = classifyRow(r.canon);
+    tbody += `<tr data-i="${i}"><td class="rowidx">${i+1}</td>` +
+      SCHEMA.map(f=>`<td class="c-${cls[f.k]}" contenteditable="true" data-f="${f.k}">${escapeHtml(r.canon[f.k])}</td>`).join('') +
+      '</tr>';
+  });
+  tw.innerHTML = `<table><thead>${thead}</thead><tbody>${tbody}</tbody></table>`;
+
+  tw.querySelectorAll('td[contenteditable]').forEach(td=>{
+    td.addEventListener('blur', onEdit);
+  });
+  updateStats();
+}
+
+function onEdit(e){
+  const td = e.target;
+  const tr = td.closest('tr');
+  const i = +tr.dataset.i;
+  const f = td.dataset.f;
+  rows[i].canon[f] = td.textContent.trim();
+  const cls = classifyRow(rows[i].canon);
+  tr.querySelectorAll('td[data-f]').forEach(cell=>{
+    const field = cell.dataset.f;
+    cell.className = 'c-' + cls[field];
+  });
+  updateStats();
+}
+
+function updateStats(){
+  let clean=0, errRows=0, suspRows=0;
+  rows.forEach(r=>{
+    const cls = classifyRow(r.canon);
+    const vals = Object.values(cls);
+    if(vals.includes('bad')) errRows++;
+    else if(vals.includes('susp')) suspRows++;
+    else clean++;
+  });
+  document.getElementById('stats').innerHTML =
+    `<span><b>${rows.length}</b> đơn</span>` +
+    `<span style="color:var(--ok)"><b>${clean}</b> sạch</span>` +
+    `<span style="color:var(--susp)"><b>${suspRows}</b> cần xem lại</span>` +
+    `<span style="color:var(--bad)"><b>${errRows}</b> thiếu/lỗi</span>`;
+}
+
+function escapeHtml(s){ return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+
+// Chuẩn hóa mọi kiểu ngày giờ cũ về DD/MM/YYYY HH:MM
+function parseFlexibleDateTime(str){
+  if(!str) return null;
+  str = String(str).trim(); if(!str) return null;
+  let m;
+  m = str.match(/^(\d{4})-(\d{2})-(\d{2})T(\d{2}):(\d{2})/); // ISO
+  if(m) return {y:+m[1], mo:+m[2], d:+m[3], h:+m[4], mi:+m[5]};
+  m = str.match(/^(\d{1,2}):(\d{2})(?::(\d{2}))?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // HH:MM:SS DD/MM/YYYY
+  if(m) return {h:+m[1], mi:+m[2], d:+m[4], mo:+m[5], y:+m[6]};
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{2})\s+(\d{1,2}):(\d{2})$/); // DD/MM/YY HH:MM
+  if(m){ let yy=+m[3]; yy += yy<70?2000:1900; return {d:+m[1], mo:+m[2], y:yy, h:+m[4], mi:+m[5]}; }
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})[ ,]+(\d{1,2}):(\d{2})$/); // DD/MM/YYYY HH:MM (đã chuẩn)
+  if(m) return {d:+m[1], mo:+m[2], y:+m[3], h:+m[4], mi:+m[5]};
+  m = str.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/); // DD/MM/YYYY (không có giờ)
+  if(m) return {d:+m[1], mo:+m[2], y:+m[3], h:0, mi:0};
+  if(/^\d{10,14}$/.test(str)){ // epoch ms
+    const dt = new Date(Number(str));
+    if(!isNaN(dt.getTime())) return {y:dt.getUTCFullYear(), mo:dt.getUTCMonth()+1, d:dt.getUTCDate(), h:dt.getUTCHours(), mi:dt.getUTCMinutes()};
+  }
+  return null;
+}
+function fmtCanonicalDateTime(o){
+  const p2=n=>String(n).padStart(2,'0');
+  return `${p2(o.d)}/${p2(o.mo)}/${o.y} ${p2(o.h)}:${p2(o.mi)}`;
+}
+const DATE_FIELDS = ['date','fulfilledAt'];
+function normalizeAllDates(){
+  if(!rows.length){ alert('Chưa có dữ liệu. Dán JSON và bấm "Chuẩn hóa" trước.'); return; }
+  let changed = 0;
+  rows.forEach(r=>{
+    DATE_FIELDS.forEach(f=>{
+      const cur = r.canon[f];
+      if(!cur) return;
+      const parsed = parseFlexibleDateTime(cur);
+      if(parsed){
+        const out = fmtCanonicalDateTime(parsed);
+        if(out !== cur){ r.canon[f] = out; changed++; }
+      }
+    });
+  });
+  render();
+  alert(`Đã chuẩn hóa ${changed} giá trị ngày giờ (date, fulfilledAt) về định dạng DD/MM/YYYY HH:MM.`);
+}
+document.getElementById('dateBtn').addEventListener('click', normalizeAllDates);
+
+function parseInput(text){
+  let data;
+  try{ data = JSON.parse(text); }
+  catch(err){ alert('JSON không hợp lệ: ' + err.message); return; }
+  if(!Array.isArray(data)){
+    if(typeof data==='object') data=[data]; else { alert('Cần một mảng (array) các order.'); return; }
+  }
+  rows = data.map(raw=>({canon: mapToCanon(raw)}));
+  try{ localStorage.setItem('onorm_last', text); }catch(e){}
+  render();
+}
+
+document.getElementById('parseBtn').addEventListener('click', ()=>{
+  parseInput(document.getElementById('input').value);
+});
+document.getElementById('sampleClear').addEventListener('click', ()=>{
+  document.getElementById('input').value=''; rows=[]; render();
+  try{ localStorage.removeItem('onorm_last'); }catch(e){}
+});
+document.getElementById('fileInput').addEventListener('change', (e)=>{
+  const file = e.target.files[0]; if(!file) return;
+  const reader = new FileReader();
+  reader.onload = ()=>{ document.getElementById('input').value = reader.result; parseInput(reader.result); };
+  reader.readAsText(file);
+  document.getElementById('fileNote').textContent = file.name;
+});
+
+function buildExportJson(){
+  const out = rows.map(r=>{
+    const o = {};
+    SCHEMA.forEach(f=>{
+      let v = r.canon[f.k];
+      if(['totalVnd','totalCny','days','qty','createdTs','daysLeft'].includes(f.k) && v!=='' && !isNaN(v)) v = Number(v);
+      else if(['needSupport','isUpgrade','expFinal'].includes(f.k) && (v==='true'||v==='false')) v = (v==='true');
+      o[f.k] = v;
+    });
+    return o;
+  });
+  return JSON.stringify(out, null, 2);
+}
+
+document.getElementById('exportBtn').addEventListener('click', ()=>{
+  const box = document.getElementById('exportBox');
+  document.getElementById('exportOut').value = buildExportJson();
+  box.style.display = box.style.display==='none' ? 'block':'none';
+});
+document.getElementById('copyBtn').addEventListener('click', async ()=>{
+  const json = buildExportJson();
+  try{ await navigator.clipboard.writeText(json); alert('Đã copy JSON.'); }
+  catch(e){ document.getElementById('exportOut').value=json; document.getElementById('exportBox').style.display='block'; }
+});
+document.getElementById('downloadBtn').addEventListener('click', ()=>{
+  const json = buildExportJson();
+  const blob = new Blob([json], {type:'application/json'});
+  const url = URL.createObjectURL(blob);
+  const a = document.createElement('a');
+  a.href = url; a.download = 'orders_normalized.json'; a.click();
+  URL.revokeObjectURL(url);
+});
+
+// Restore last session's pasted data, if any (per-device convenience only).
+try{
+  const last = localStorage.getItem('onorm_last');
+  if(last){ document.getElementById('input').value = last; parseInput(last); }
+}catch(e){}
+</script>
+</body>
+</html>
