@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>KV Order Schema Master Spreadsheet (37 Cột Đầy Đủ) — VPNTrinhHg</title>
+<title>KV Order Schema Master Spreadsheet & Editor — VPNTrinhHg</title>
 <script src="https://cdn.tailwindcss.com"></script>
 <script>
   tailwind.config = {
@@ -26,7 +26,7 @@
   body { font-family: 'Plus Jakarta Sans', sans-serif; }
   .font-mono { font-family: 'JetBrains Mono', monospace; }
   
-  /* Scrollbar */
+  /* Scrollbar mượt */
   ::-webkit-scrollbar { width: 10px; height: 10px; }
   ::-webkit-scrollbar-track { background: #f1f5f9; }
   .dark ::-webkit-scrollbar-track { background: #0f172a; }
@@ -66,10 +66,10 @@
         </div>
         <div>
           <div class="flex items-center gap-2">
-            <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">KV Order Full Spreadsheet</h1>
-            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">37 Cột Đầy Đủ</span>
+            <h1 class="text-base font-extrabold tracking-tight text-slate-900 dark:text-white">KV Order Full Spreadsheet & Editor</h1>
+            <span class="px-2 py-0.5 text-[10px] font-bold rounded-full bg-blue-100 text-blue-700 dark:bg-blue-950/60 dark:text-blue-300 border border-blue-200 dark:border-blue-800">37 Cột Chuẩn Worker</span>
           </div>
-          <p class="text-[11px] text-slate-500 dark:text-slate-400">Trình chuẩn hóa dữ liệu Cloudflare KV <span class="font-mono font-semibold text-slate-700 dark:text-slate-300">ALL_ORDERS</span> — Không che giấu, chiều dài tự giãn hết cỡ</p>
+          <p class="text-[11px] text-slate-500 dark:text-slate-400">Trình chuẩn hóa dữ liệu Cloudflare KV <span class="font-mono font-semibold text-slate-700 dark:text-slate-300">ALL_ORDERS</span> — Nhấp cây bút chì để sửa 37 cột</p>
         </div>
       </div>
 
@@ -115,13 +115,13 @@
       <div class="flex flex-col justify-between gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
         <div>
           <div class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-emerald-500"></i> Quy chuẩn chuẩn hóa:
+            <i class="fa-solid fa-circle-check text-emerald-500"></i> Tính năng chuẩn hóa:
           </div>
           <ul class="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 list-disc list-inside">
-            <li>Sắp xếp đồng nhất <b>37 trường canonical</b>.</li>
-            <li>Sửa <code class="font-mono text-rose-500">lockInfo</code> thành Object <code class="font-mono">{}</code> (không để chuỗi).</li>
-            <li>Đồng bộ <code class="font-mono">createdTs</code>, <code class="font-mono">date</code>, <code class="font-mono">dateCreated</code>.</li>
-            <li>Tự tính số ngày <code class="font-mono">days</code> nếu bị rỗng.</li>
+            <li>Sắp xếp <b>37 trường canonical</b> đồng nhất.</li>
+            <li>Sửa <code class="font-mono text-rose-500">lockInfo</code> về JSON Object <code class="font-mono">{}</code> chuẩn.</li>
+            <li>Đồng bộ <code class="font-mono">dateCreated</code> từ <code class="font-mono">date</code>.</li>
+            <li>Bấm cây bút chì ở mỗi dòng để chỉnh sửa trực tiếp 37 cột.</li>
           </ul>
         </div>
         <button onclick="parseAndLoadJson()" class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow transition flex items-center justify-center gap-1.5">
@@ -131,10 +131,10 @@
     </div>
   </section>
 
-  <!-- TOOLBAR & THỐNG KÊ -->
+  <!-- TOOLBAR & CÁC BỘ LỌC NÂNG CAO -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2 flex-none shadow-sm">
     <div class="w-full flex flex-wrap items-center justify-between gap-3">
-      <!-- Thống kê nhanh -->
+      <!-- Thống kê -->
       <div class="flex items-center flex-wrap gap-2 text-xs">
         <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
           <i class="fa-solid fa-list-ol text-blue-500"></i> Tổng: <b id="statTotal" class="text-blue-600 dark:text-blue-400">0</b> đơn
@@ -148,39 +148,55 @@
         <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
           <i class="fa-solid fa-coins text-amber-500"></i> Doanh thu: <b id="statVnd" class="text-slate-900 dark:text-white">0đ</b> <span id="statCnyWrap" class="hidden">/ <b id="statCny" class="text-amber-600">0¥</b></span>
         </div>
-        <div class="hidden md:flex items-center gap-1 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-500 text-[11px] font-mono">
-          <i class="fa-solid fa-hard-drive text-slate-400"></i> KV Size: <span id="statKvSize">0 KB</span>
-        </div>
       </div>
 
-      <!-- Công cụ hàng loạt & Tìm kiếm -->
+      <!-- BỘ LỌC NÂNG CAO: THÁNG, GÓI GIÁ CŨ/MỚI, PHƯƠNG THỨC THANH TOÁN -->
       <div class="flex items-center flex-wrap gap-2 text-xs">
+        <!-- Tìm kiếm -->
         <div class="relative">
           <i class="fa-solid fa-magnifying-glass absolute left-2.5 top-1/2 -translate-y-1/2 text-slate-400 text-[11px]"></i>
-          <input type="text" id="searchInput" oninput="renderTable()" placeholder="Tìm ID, email, gói, link..." class="pl-7 pr-3 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 w-44 sm:w-56 focus:outline-none focus:ring-1 focus:ring-blue-500">
+          <input type="text" id="searchInput" oninput="renderTable()" placeholder="Tìm ID, email, gói, link..." class="pl-7 pr-3 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-800 dark:text-slate-200 w-36 sm:w-44 focus:outline-none focus:ring-1 focus:ring-blue-500">
         </div>
 
-        <select id="statusFilter" onchange="renderTable()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200">
+        <!-- Lọc theo Tháng -->
+        <select id="monthFilter" onchange="renderTable()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-medium">
+          <option value="all">Tất cả các tháng</option>
+        </select>
+
+        <!-- Lọc Gói Giá Cũ / Giá Mới -->
+        <select id="pkgTypeFilter" onchange="renderTable()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-medium">
+          <option value="all">Tất cả loại gói</option>
+          <option value="new">Gói giá mới (hiện tại)</option>
+          <option value="old">Gói giá cũ (o1, o2, o3)</option>
+        </select>
+
+        <!-- Lọc Phương thức thanh toán -->
+        <select id="methodFilter" onchange="renderTable()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-medium">
+          <option value="all">Tất cả phương thức</option>
+          <option value="bank">Ngân hàng VN</option>
+          <option value="alipay">Alipay</option>
+          <option value="weixin">Weixin (WeChat Pay)</option>
+        </select>
+
+        <!-- Lọc Trạng thái -->
+        <select id="statusFilter" onchange="renderTable()" class="px-2 py-1 bg-slate-100 dark:bg-slate-800 border border-slate-200 dark:border-slate-700 rounded-lg text-xs text-slate-700 dark:text-slate-200 font-medium">
           <option value="all">Tất cả trạng thái</option>
           <option value="success">Success</option>
           <option value="pending">Pending</option>
           <option value="failed">Failed</option>
-          <option value="warning">Chỉ đơn có cảnh báo</option>
+          <option value="warning">Chỉ đơn có lỗi lệch chuẩn</option>
         </select>
 
         <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
         <button onclick="calcMissingDays()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Tự tính số ngày (days) dựa trên khoảng cách giữa ngày tạo và ngày hết hạn">
-          <i class="fa-regular fa-calendar-plus text-blue-500"></i> Tính số ngày (days)
+          <i class="fa-regular fa-calendar-plus text-blue-500"></i> Tính ngày
         </button>
         <button onclick="fixLockInfoAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Ép lockInfo về JSON Object {}">
           <i class="fa-solid fa-lock text-amber-500"></i> Sửa lockInfo
         </button>
         <button onclick="addNewRow()" class="px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold transition flex items-center gap-1 border border-blue-200 dark:border-blue-800">
           <i class="fa-solid fa-plus"></i> Thêm đơn
-        </button>
-        <button onclick="deleteSelectedRows()" id="btnDeleteSelected" class="hidden px-2.5 py-1 rounded-md bg-rose-50 dark:bg-rose-950/40 hover:bg-rose-100 dark:hover:bg-rose-900/50 text-rose-700 dark:text-rose-300 font-bold transition items-center gap-1 border border-rose-200 dark:border-rose-800">
-          <i class="fa-solid fa-trash"></i> Xóa (<span id="selectedCount">0</span>)
         </button>
       </div>
     </div>
@@ -192,14 +208,16 @@
       <!-- HEADER 37 CỘT -->
       <thead class="bg-slate-200 dark:bg-slate-800 sticky top-0 z-30 shadow-sm text-slate-700 dark:text-slate-300 font-bold select-none border-b border-slate-300 dark:border-slate-700">
         <tr>
-          <!-- Cột cố định -->
-          <th class="text-center sticky-col-1 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700">
-            <input type="checkbox" id="selectAllCheckbox" onchange="toggleSelectAll(this)" class="rounded text-blue-600 focus:ring-0 cursor-pointer">
+          <!-- Cột Cây bút chì thay cho Checkbox (Ghim vị trí 1) -->
+          <th class="text-center sticky-col-1 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-blue-600 dark:text-blue-400" title="Nhấp vào cây bút chì để sửa 37 cột">
+            <i class="fa-solid fa-pen-to-square"></i>
           </th>
+          <!-- Cột STT (Ghim vị trí 2) -->
           <th class="text-center sticky-col-2 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700 text-slate-500">#</th>
+          <!-- Cột ID (Ghim vị trí 3) -->
           <th class="sticky-col-3 bg-slate-200 dark:bg-slate-800 border-r border-slate-300 dark:border-slate-700">id</th>
           
-          <!-- Toàn bộ các cột độc lập còn lại -->
+          <!-- Toàn bộ 36 cột còn lại xổ ra 100% -->
           <th class="border-r border-slate-300 dark:border-slate-700">status</th>
           <th class="border-r border-slate-300 dark:border-slate-700">email</th>
           <th class="border-r border-slate-300 dark:border-slate-700">nickname</th>
@@ -236,17 +254,17 @@
           <th class="border-r border-slate-300 dark:border-slate-700">upgradeStatus</th>
           <th class="border-r border-slate-300 dark:border-slate-700">upgradedAt</th>
           <th class="border-r border-slate-300 dark:border-slate-700">lastMailTrack</th>
-          <th class="text-center">Thao tác</th>
+          <th class="text-center">Xóa</th>
         </tr>
       </thead>
 
       <!-- THÂN BẢNG TÍNH -->
       <tbody id="sheetBody" class="divide-y divide-slate-200 dark:divide-slate-800 bg-white dark:bg-slate-900 font-mono">
-        <!-- Render động -->
+        <!-- Render động từ JS -->
       </tbody>
     </table>
 
-    <!-- EMPTY STATE KHI CHƯA NẠP DỮ LIỆU -->
+    <!-- EMPTY STATE KHI CHƯA CÓ DỮ LIỆU -->
     <div id="emptyState" class="flex flex-col items-center justify-center p-16 text-center text-slate-400">
       <div class="w-16 h-16 rounded-full bg-slate-200 dark:bg-slate-800 flex items-center justify-center text-2xl mb-3">
         <i class="fa-regular fa-folder-open"></i>
@@ -259,10 +277,274 @@
     </div>
   </main>
 
-  <!-- TOAST THÔNG BÁO -->
-  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xl text-xs font-bold">
-    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
-    <span id="toastMsg">Đã sao chép!</span>
+  <!-- MODAL CHỈNH SỬA TOÀN DIỆN 37 CỘT (FULL 37-COLUMN EDIT MODAL) -->
+  <div id="editModal" class="fixed inset-0 z-50 hidden bg-slate-900/60 backdrop-blur-sm flex items-center justify-center p-3 sm:p-5">
+    <div class="bg-white dark:bg-slate-900 border border-slate-200 dark:border-slate-800 rounded-2xl shadow-2xl w-full max-w-5xl max-h-[92vh] flex flex-col overflow-hidden">
+      <!-- Modal Header -->
+      <div class="px-5 py-3.5 border-b border-slate-200 dark:border-slate-800 flex items-center justify-between bg-slate-50/50 dark:bg-slate-950/50">
+        <div class="flex items-center gap-2">
+          <div class="w-7 h-7 rounded-lg bg-blue-600 text-white flex items-center justify-center text-xs">
+            <i class="fa-solid fa-pen"></i>
+          </div>
+          <h3 class="font-bold text-sm text-slate-900 dark:text-white">
+            Chỉnh sửa 37 cột đơn hàng: <span id="modalOrderTitle" class="font-mono text-blue-600 dark:text-blue-400"></span>
+          </h3>
+        </div>
+        <button onclick="closeEditModal()" class="w-8 h-8 rounded-lg hover:bg-slate-100 dark:hover:bg-slate-800 text-slate-400">
+          <i class="fa-solid fa-xmark"></i>
+        </button>
+      </div>
+
+      <!-- Modal Body (37 Fields Form) -->
+      <div class="p-5 flex-1 overflow-y-auto space-y-6 text-xs font-sans">
+        <input type="hidden" id="editOrderIndex">
+
+        <!-- NHÓM 1: ĐỊNH DANH & KHÁCH HÀNG -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-blue-600 dark:text-blue-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-user"></i> 1. Định danh & Khách hàng
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">id (Mã đơn):</label>
+              <input type="text" id="f_id" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">status (Trạng thái):</label>
+              <select id="f_status" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="success">success</option>
+                <option value="pending">pending</option>
+                <option value="failed">failed</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">email:</label>
+              <input type="text" id="f_email" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">nickname:</label>
+              <input type="text" id="f_nickname" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">zalo:</label>
+              <input type="text" id="f_zalo" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 2: GÓI CƯỚC & GIÁ TIỀN -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-box"></i> 2. Gói cước & Giá tiền
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div class="lg:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">method:</label>
+              <input type="text" id="f_method" placeholder="Ngân hàng VN / Alipay / Weixin" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">pkgId:</label>
+              <input type="text" id="f_pkgId" placeholder="t1, c1, o1,..." class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">pkgName:</label>
+              <input type="text" id="f_pkgName" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">pkgData:</label>
+              <input type="text" id="f_pkgData" placeholder="100GB, 1000GB" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+            <div class="lg:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">pkg (Chuỗi đầy đủ):</label>
+              <input type="text" id="f_pkg" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">qty:</label>
+              <input type="number" id="f_qty" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-center">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">days (Số ngày):</label>
+              <input type="number" id="f_days" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-center font-bold text-blue-600">
+            </div>
+            <div class="lg:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">totalVnd (Tiền VNĐ):</label>
+              <input type="number" id="f_totalVnd" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold">
+            </div>
+            <div class="lg:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">totalCny (Tiền Tệ):</label>
+              <input type="number" step="0.01" id="f_totalCny" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-amber-600">
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 3: THỜI GIAN & HẠN DÙNG -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-emerald-600 dark:text-emerald-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-regular fa-clock"></i> 3. Thời gian & Hạn dùng
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div class="lg:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">date (Giờ tạo chi tiết):</label>
+              <input type="text" id="f_date" placeholder="DD/MM/YYYY HH:mm" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">dateCreated:</label>
+              <input type="text" id="f_dateCreated" placeholder="DD/MM/YYYY" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">createdTs (ms):</label>
+              <input type="number" id="f_createdTs" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">expDate (Hạn dùng):</label>
+              <input type="text" id="f_expDate" placeholder="DD/MM/YYYY / Vĩnh viễn" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-emerald-600">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">expFinal:</label>
+              <select id="f_expFinal" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="true">true</option>
+                <option value="false">false</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">paidAt:</label>
+              <input type="text" id="f_paidAt" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 4: HỆ THỐNG & ĐỊNH TUYẾN -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-purple-600 dark:text-purple-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-server"></i> 4. Hệ thống, Định tuyến & Hỗ trợ
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-6 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">fulfilledAt:</label>
+              <input type="text" id="f_fulfilledAt" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">workerUrl:</label>
+              <input type="text" id="f_workerUrl" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div class="md:col-span-2">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">sourceWeb:</label>
+              <input type="text" id="f_sourceWeb" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">orderType:</label>
+              <input type="text" id="f_orderType" placeholder="new / renew" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">needSupport:</label>
+              <select id="f_needSupport" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+            <div class="md:col-span-5">
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">reason (Lý do từ chối/ghi chú):</label>
+              <input type="text" id="f_reason" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 5: LINK SUB (3 WEB) -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-cyan-600 dark:text-cyan-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-link"></i> 5. Link Thuê Bao (info1, info2, info3)
+          </h4>
+          <div class="space-y-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">info1 (Link Web 1):</label>
+              <input type="text" id="f_info1" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">info2 (Link Web 2):</label>
+              <input type="text" id="f_info2" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">info3 (Link Web 3):</label>
+              <input type="text" id="f_info3" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 6: KHÓA & BẢO VỆ DỮ LIỆU -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-rose-600 dark:text-rose-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-lock"></i> 6. Khóa & Bảo vệ dữ liệu (lockInfo, lockAuto, lockExpiry)
+          </h4>
+          <div class="grid grid-cols-1 md:grid-cols-3 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">lockInfo (Object JSON):</label>
+              <textarea id="f_lockInfo" rows="2" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-xs"></textarea>
+              <span class="text-[10px] text-slate-400">Ví dụ: {} hoặc {"info1":true}</span>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">lockAuto (Khóa fulfillment):</label>
+              <select id="f_lockAuto" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">lockExpiry (Khóa hạn dùng):</label>
+              <select id="f_lockExpiry" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+          </div>
+        </div>
+
+        <!-- NHÓM 7: NÂNG CẤP & CRON MAIL -->
+        <div>
+          <h4 class="font-bold text-xs uppercase tracking-wider text-indigo-600 dark:text-indigo-400 mb-2 flex items-center gap-1.5">
+            <i class="fa-solid fa-arrow-up-right-dots"></i> 7. Nâng cấp gói & Tracking Cron
+          </h4>
+          <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-5 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">isUpgrade:</label>
+              <select id="f_isUpgrade" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900">
+                <option value="false">false</option>
+                <option value="true">true</option>
+              </select>
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">upgradeStatus:</label>
+              <input type="text" id="f_upgradeStatus" placeholder="null / pending / success" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">upgradedAt:</label>
+              <input type="number" id="f_upgradedAt" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">lastMailTrack:</label>
+              <input type="text" id="f_lastMailTrack" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">pendingUpgrade:</label>
+              <input type="text" id="f_pendingUpgrade" placeholder="null hoặc Object" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
+            </div>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Modal Footer -->
+      <div class="px-5 py-3 border-t border-slate-200 dark:border-slate-800 bg-slate-50 dark:bg-slate-950 flex items-center justify-between">
+        <span class="text-[11px] text-slate-500">Mẹo: Sau khi Lưu, dữ liệu sẽ được tự động ép chuẩn canonical schema.</span>
+        <div class="flex gap-2">
+          <button onclick="closeEditModal()" class="px-4 py-2 rounded-lg text-xs font-semibold bg-white dark:bg-slate-800 text-slate-600 dark:text-slate-300 border border-slate-200 dark:border-slate-700 hover:bg-slate-100">
+            Hủy
+          </button>
+          <button onclick="saveEditModal()" class="px-5 py-2 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 flex items-center gap-1.5 transition">
+            <i class="fa-solid fa-floppy-disk"></i> Lưu thay đổi
+          </button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <!-- MODAL XEM TRƯỚC JSON (1 DÒNG HOẶC ĐẸP) -->
@@ -298,9 +580,15 @@
     </div>
   </div>
 
+  <!-- TOAST THÔNG BÁO -->
+  <div id="toast" class="fixed bottom-5 right-5 z-50 transform translate-y-20 opacity-0 pointer-events-none transition-all duration-300 flex items-center gap-2.5 px-4 py-3 rounded-xl bg-slate-900 text-white dark:bg-white dark:text-slate-900 shadow-2xl text-xs font-bold">
+    <i id="toastIcon" class="fa-solid fa-circle-check text-emerald-400"></i>
+    <span id="toastMsg">Đã sao chép!</span>
+  </div>
+
   <script>
     // ================================================================
-    // 1. TOÀN BỘ 37 TRƯỜNG CANONICAL KHỚP 100% VỚI WORKER.JS
+    // 1. CANONICAL KEYS (37 TRƯỜNG CHUẨN WORKER)
     // ================================================================
     const CANONICAL_KEYS = [
       "id", "status", "email", "nickname", "zalo", "method", "pkgId", "pkgName", "pkgData", "pkg",
@@ -311,17 +599,15 @@
     ];
 
     let orders = [];
-    let selectedIndices = new Set();
     let isPrettyMode = false;
 
     // ================================================================
-    // 2. PARSING & CHUẨN HÓA DỮ LIỆU
+    // 2. PARSING & NORMALIZE
     // ================================================================
     function normalizeOrder(raw) {
       if (!raw || typeof raw !== 'object') raw = {};
       const clean = {};
 
-      // 1. Strings
       clean.id = String(raw.id || "").trim().toUpperCase();
       clean.status = String(raw.status || "pending").trim();
       clean.email = String(raw.email || "").trim().toLowerCase();
@@ -333,25 +619,21 @@
       clean.pkgData = String(raw.pkgData || "").trim();
       clean.pkg = String(raw.pkg || "").trim();
 
-      // 2. Numbers
       clean.qty = (typeof raw.qty === 'number' && raw.qty > 0) ? Math.floor(raw.qty) : (parseInt(raw.qty) || 1);
       clean.days = (raw.days !== "" && raw.days !== null && raw.days !== undefined && !isNaN(raw.days)) ? Number(raw.days) : "";
       clean.totalVnd = (raw.totalVnd !== "" && raw.totalVnd !== null && raw.totalVnd !== undefined && !isNaN(raw.totalVnd)) ? Number(raw.totalVnd) : "";
       clean.totalCny = (raw.totalCny !== "" && raw.totalCny !== null && raw.totalCny !== undefined && !isNaN(raw.totalCny)) ? Number(raw.totalCny) : "";
 
-      // 3. Timestamps & Dates
       clean.createdTs = Number(raw.createdTs) || 0;
       clean.date = String(raw.date || "").trim();
       clean.dateCreated = String(raw.dateCreated || "").trim();
 
-      // Tự tìm createdTs nếu thiếu
       if (!clean.createdTs) {
         if (clean.date) clean.createdTs = parseDateStrToTs(clean.date);
         else if (clean.dateCreated) clean.createdTs = parseDateStrToTs(clean.dateCreated);
         else clean.createdTs = Date.now();
       }
 
-      // Tự tạo date và dateCreated từ createdTs nếu thiếu
       if (clean.createdTs > 0) {
         if (!clean.date) clean.date = tsToFullDateStr(clean.createdTs);
         if (!clean.dateCreated) clean.dateCreated = tsToDateStr(clean.createdTs);
@@ -363,19 +645,17 @@
       clean.paidAt = (raw.paidAt !== "" && raw.paidAt !== null && raw.paidAt !== undefined && !isNaN(raw.paidAt)) ? Number(raw.paidAt) : "";
       clean.fulfilledAt = (raw.fulfilledAt !== "" && raw.fulfilledAt !== null && raw.fulfilledAt !== undefined) ? raw.fulfilledAt : "";
 
-      // 4. Routing & URLs
       clean.workerUrl = String(raw.workerUrl || "").trim();
       clean.sourceWeb = String(raw.sourceWeb || "").trim();
       clean.orderType = String(raw.orderType || "new").trim();
       clean.needSupport = Boolean(raw.needSupport);
       clean.reason = String(raw.reason || "").trim();
 
-      // 5. Subscription Links
       clean.info1 = String(raw.info1 || "").trim();
       clean.info2 = String(raw.info2 || "").trim();
       clean.info3 = String(raw.info3 || "").trim();
 
-      // 6. lockInfo: BẮT BUỘC LÀ JSON OBJECT {}
+      // lockInfo: Luôn là Object {}
       if (typeof raw.lockInfo === 'string') {
         try {
           const parsed = JSON.parse(raw.lockInfo);
@@ -389,16 +669,24 @@
         clean.lockInfo = {};
       }
 
-      // 7. Locks & Upgrade status
       clean.lockAuto = Boolean(raw.lockAuto);
       clean.lockExpiry = Boolean(raw.lockExpiry);
       clean.isUpgrade = Boolean(raw.isUpgrade);
-      clean.pendingUpgrade = (raw.pendingUpgrade && typeof raw.pendingUpgrade === 'object') ? raw.pendingUpgrade : null;
-      clean.upgradeStatus = raw.upgradeStatus ? String(raw.upgradeStatus) : null;
+
+      // pendingUpgrade
+      if (raw.pendingUpgrade && typeof raw.pendingUpgrade === 'object') {
+        clean.pendingUpgrade = raw.pendingUpgrade;
+      } else if (typeof raw.pendingUpgrade === 'string' && raw.pendingUpgrade.trim().startsWith('{')) {
+        try { clean.pendingUpgrade = JSON.parse(raw.pendingUpgrade); } catch { clean.pendingUpgrade = null; }
+      } else {
+        clean.pendingUpgrade = null;
+      }
+
+      // upgradeStatus
+      clean.upgradeStatus = (raw.upgradeStatus && raw.upgradeStatus !== 'null') ? String(raw.upgradeStatus) : null;
       clean.upgradedAt = Number(raw.upgradedAt) || 0;
       clean.lastMailTrack = String(raw.lastMailTrack || "").trim();
 
-      // Sắp xếp thứ tự các key đúng theo CANONICAL_KEYS
       const ordered = {};
       CANONICAL_KEYS.forEach(k => {
         ordered[k] = clean[k] !== undefined ? clean[k] : "";
@@ -406,23 +694,17 @@
       return ordered;
     }
 
-    // Date Utilities
+    // Tiện ích ngày tháng
     function tsToDateStr(ts) {
       const d = new Date(ts);
       if (isNaN(d.getTime())) return "";
-      const day = String(d.getDate()).padStart(2, '0');
-      const mon = String(d.getMonth() + 1).padStart(2, '0');
-      return `${day}/${mon}/${d.getFullYear()}`;
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()}`;
     }
 
     function tsToFullDateStr(ts) {
       const d = new Date(ts);
       if (isNaN(d.getTime())) return "";
-      const day = String(d.getDate()).padStart(2, '0');
-      const mon = String(d.getMonth() + 1).padStart(2, '0');
-      const h = String(d.getHours()).padStart(2, '0');
-      const m = String(d.getMinutes()).padStart(2, '0');
-      return `${day}/${mon}/${d.getFullYear()} ${h}:${m}`;
+      return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     }
 
     function parseDateStrToTs(str) {
@@ -460,7 +742,7 @@
     }
 
     // ================================================================
-    // 3. XỬ LÝ GIAO DIỆN & RENDER 37 CỘT CHI TIẾT
+    // 3. NẠP JSON & TỰ ĐỘNG CẬP NHẬT FILTER THÁNG
     // ================================================================
     function parseAndLoadJson() {
       const raw = document.getElementById('rawJsonInput').value.trim();
@@ -475,7 +757,7 @@
           else throw new Error("Dữ liệu không phải là mảng hoặc đối tượng JSON");
         }
         orders = parsed.map(normalizeOrder);
-        selectedIndices.clear();
+        updateMonthFilterOptions();
         renderTable();
         updateStats();
         showToast(`Đã tải thành công ${orders.length} đơn hàng!`, "success");
@@ -485,11 +767,52 @@
       }
     }
 
+    // Tự động quét và điền danh sách Tháng (MM/YYYY) vào dropdown
+    function updateMonthFilterOptions() {
+      const monthSelect = document.getElementById('monthFilter');
+      const currentVal = monthSelect.value;
+      const monthSet = new Set();
+
+      orders.forEach(o => {
+        const dStr = o.dateCreated || (o.date ? o.date.split(" ")[0] : "");
+        if (dStr) {
+          const parts = dStr.split("/");
+          if (parts.length >= 3) {
+            const m = String(parts[1]).padStart(2, '0');
+            const y = parts[2];
+            monthSet.add(`${m}/${y}`);
+          }
+        }
+      });
+
+      // Sắp xếp giảm dần theo thời gian
+      const sortedMonths = Array.from(monthSet).sort((a, b) => {
+        const [m1, y1] = a.split("/").map(Number);
+        const [m2, y2] = b.split("/").map(Number);
+        return (y2 * 12 + m2) - (y1 * 12 + m1);
+      });
+
+      let optionsHtml = '<option value="all">Tất cả các tháng</option>';
+      sortedMonths.forEach(m => {
+        optionsHtml += `<option value="${m}">Tháng ${m}</option>`;
+      });
+      monthSelect.innerHTML = optionsHtml;
+      if (monthSet.has(currentVal)) {
+        monthSelect.value = currentVal;
+      }
+    }
+
+    // ================================================================
+    // 4. RENDER BẢNG TÍNH & BỘ LỌC NÂNG CAO
+    // ================================================================
     function renderTable() {
       const tbody = document.getElementById('sheetBody');
       const empty = document.getElementById('emptyState');
       const search = document.getElementById('searchInput').value.trim().toLowerCase();
       const statusFilter = document.getElementById('statusFilter').value;
+      const monthFilter = document.getElementById('monthFilter').value;
+      const pkgTypeFilter = document.getElementById('pkgTypeFilter').value;
+      const methodFilter = document.getElementById('methodFilter').value;
 
       if (!orders || orders.length === 0) {
         tbody.innerHTML = "";
@@ -500,21 +823,45 @@
 
       let html = "";
       orders.forEach((o, idx) => {
-        // Cảnh báo lỗi dữ liệu
+        // 1. Kiểm tra cảnh báo
         const warnings = [];
         if (!o.id) warnings.push("Thiếu ID");
         if (typeof o.lockInfo !== 'object' || Array.isArray(o.lockInfo)) warnings.push("lockInfo sai type");
         if (o.days && !o.expDate) warnings.push("Chưa có expDate");
 
+        // 2. Lọc trạng thái
         if (statusFilter === 'warning' && warnings.length === 0) return;
         if (statusFilter !== 'all' && statusFilter !== 'warning' && o.status !== statusFilter) return;
 
+        // 3. Lọc theo Tháng (MM/YYYY)
+        if (monthFilter !== 'all') {
+          const dStr = o.dateCreated || (o.date ? o.date.split(" ")[0] : "");
+          if (!dStr) return;
+          const parts = dStr.split("/");
+          if (parts.length < 3) return;
+          const my = `${String(parts[1]).padStart(2, '0')}/${parts[2]}`;
+          if (my !== monthFilter) return;
+        }
+
+        // 4. Lọc Gói Giá Cũ / Giá Mới
+        const isOldPkg = (o.pkgId === 'o1' || o.pkgId === 'o2' || o.pkgId === 'o3') || String(o.pkg).includes("giá cũ");
+        if (pkgTypeFilter === 'new' && isOldPkg) return;
+        if (pkgTypeFilter === 'old' && !isOldPkg) return;
+
+        // 5. Lọc Phương thức thanh toán
+        if (methodFilter === 'bank') {
+          if (!/ngân hàng|bank/i.test(o.method || "")) return;
+        } else if (methodFilter === 'alipay') {
+          if (!/alipay/i.test(o.method || "")) return;
+        } else if (methodFilter === 'weixin') {
+          if (!/weixin|wechat/i.test(o.method || "")) return;
+        }
+
+        // 6. Tìm kiếm tự do
         if (search) {
           const rowStr = JSON.stringify(o).toLowerCase();
           if (!rowStr.includes(search)) return;
         }
-
-        const isChecked = selectedIndices.has(idx);
 
         // Status Badge
         let statusBadge = "";
@@ -532,17 +879,23 @@
 
         html += `
           <tr class="hover:bg-blue-50/50 dark:hover:bg-slate-800/50 transition-colors group">
+            <!-- CỘT 1: CÂY BÚT CHÌ THAY CHO CHECKBOX -->
             <td class="text-center sticky-col-1 bg-white dark:bg-slate-900 group-hover:bg-blue-50/50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-800">
-              <input type="checkbox" onchange="toggleSelectRow(${idx}, this)" ${isChecked ? 'checked' : ''} class="rounded text-blue-600 focus:ring-0 cursor-pointer">
+              <button onclick="openEditModal(${idx})" class="w-6 h-6 rounded flex items-center justify-center text-blue-600 dark:text-blue-400 hover:bg-blue-100 dark:hover:bg-blue-900/40 transition active:scale-90" title="Chỉnh sửa toàn bộ 37 cột">
+                <i class="fa-solid fa-pen-to-square"></i>
+              </button>
             </td>
+            <!-- CỘT 2: STT -->
             <td class="text-center sticky-col-2 bg-white dark:bg-slate-900 group-hover:bg-blue-50/50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-800 text-slate-400 font-mono text-[11px]">
               ${idx + 1}
             </td>
+            <!-- CỘT 3: ID -->
             <td class="sticky-col-3 bg-white dark:bg-slate-900 group-hover:bg-blue-50/50 dark:group-hover:bg-slate-800/50 border-r border-slate-200 dark:border-slate-800 font-mono font-bold text-slate-900 dark:text-white flex items-center gap-1.5">
               <span>${o.id || '<i class="text-rose-500 font-normal">Chưa có ID</i>'}</span>
               ${warnings.length > 0 ? `<i class="fa-solid fa-triangle-exclamation text-rose-500 text-[11px]" title="${warnings.join(', ')}"></i>` : ''}
             </td>
             
+            <!-- TOÀN BỘ CỘT DỮ LIỆU ĐỘC LẬP (XỔ 100%) -->
             <td class="border-r border-slate-200 dark:border-slate-800">${statusBadge}</td>
             <td class="border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">${o.email || ''}</td>
             <td class="border-r border-slate-200 dark:border-slate-800 text-slate-700 dark:text-slate-300">${o.nickname || ''}</td>
@@ -580,11 +933,9 @@
             <td class="border-r border-slate-200 dark:border-slate-800 text-slate-400 text-[10px]">${o.upgradedAt || 0}</td>
             <td class="border-r border-slate-200 dark:border-slate-800 text-slate-500">${o.lastMailTrack || ''}</td>
             <td class="text-center">
-              <div class="flex items-center justify-center gap-1.5">
-                <button onclick="deleteRow(${idx})" class="p-1 rounded text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50" title="Xóa dòng">
-                  <i class="fa-solid fa-trash"></i>
-                </button>
-              </div>
+              <button onclick="deleteRow(${idx})" class="p-1 rounded text-rose-500 hover:bg-rose-100 dark:hover:bg-rose-900/50" title="Xóa đơn này">
+                <i class="fa-solid fa-trash"></i>
+              </button>
             </td>
           </tr>
         `;
@@ -621,7 +972,160 @@
     }
 
     // ================================================================
-    // 4. AUTO-FIX & CÔNG CỤ HÀNG LOẠT
+    // 5. MODAL CHỈNH SỬA TOÀN BỘ 37 TRƯỜNG DỮ LIỆU
+    // ================================================================
+    function openEditModal(idx) {
+      const o = orders[idx];
+      if (!o) return;
+
+      document.getElementById('editOrderIndex').value = idx;
+      document.getElementById('modalOrderTitle').innerText = `${o.id || '#' + (idx + 1)} (${o.email || 'Không có email'})`;
+
+      // 1. Định danh
+      document.getElementById('f_id').value = o.id || '';
+      document.getElementById('f_status').value = o.status || 'pending';
+      document.getElementById('f_email').value = o.email || '';
+      document.getElementById('f_nickname').value = o.nickname || '';
+      document.getElementById('f_zalo').value = o.zalo || '';
+
+      // 2. Gói cước & Giá tiền
+      document.getElementById('f_method').value = o.method || '';
+      document.getElementById('f_pkgId').value = o.pkgId || '';
+      document.getElementById('f_pkgName').value = o.pkgName || '';
+      document.getElementById('f_pkgData').value = o.pkgData || '';
+      document.getElementById('f_pkg').value = o.pkg || '';
+      document.getElementById('f_qty').value = o.qty !== undefined ? o.qty : 1;
+      document.getElementById('f_days').value = o.days !== undefined ? o.days : '';
+      document.getElementById('f_totalVnd').value = o.totalVnd !== undefined ? o.totalVnd : '';
+      document.getElementById('f_totalCny').value = o.totalCny !== undefined ? o.totalCny : '';
+
+      // 3. Thời gian & Hạn
+      document.getElementById('f_date').value = o.date || '';
+      document.getElementById('f_dateCreated').value = o.dateCreated || '';
+      document.getElementById('f_createdTs').value = o.createdTs || 0;
+      document.getElementById('f_expDate').value = o.expDate || '';
+      document.getElementById('f_expFinal').value = String(Boolean(o.expFinal));
+      document.getElementById('f_paidAt').value = o.paidAt || '';
+
+      // 4. Hệ thống & Định tuyến
+      document.getElementById('f_fulfilledAt').value = o.fulfilledAt || '';
+      document.getElementById('f_workerUrl').value = o.workerUrl || '';
+      document.getElementById('f_sourceWeb').value = o.sourceWeb || '';
+      document.getElementById('f_orderType').value = o.orderType || 'new';
+      document.getElementById('f_needSupport').value = String(Boolean(o.needSupport));
+      document.getElementById('f_reason').value = o.reason || '';
+
+      // 5. Link Sub
+      document.getElementById('f_info1').value = o.info1 || '';
+      document.getElementById('f_info2').value = o.info2 || '';
+      document.getElementById('f_info3').value = o.info3 || '';
+
+      // 6. Khóa & Bảo vệ
+      document.getElementById('f_lockInfo').value = JSON.stringify(o.lockInfo || {});
+      document.getElementById('f_lockAuto').value = String(Boolean(o.lockAuto));
+      document.getElementById('f_lockExpiry').value = String(Boolean(o.lockExpiry));
+
+      // 7. Nâng cấp & Mail
+      document.getElementById('f_isUpgrade').value = String(Boolean(o.isUpgrade));
+      document.getElementById('f_upgradeStatus').value = o.upgradeStatus !== null ? o.upgradeStatus : 'null';
+      document.getElementById('f_upgradedAt').value = o.upgradedAt || 0;
+      document.getElementById('f_lastMailTrack').value = o.lastMailTrack || '';
+      document.getElementById('f_pendingUpgrade').value = o.pendingUpgrade ? JSON.stringify(o.pendingUpgrade) : 'null';
+
+      document.getElementById('editModal').classList.remove('hidden');
+    }
+
+    function saveEditModal() {
+      const idx = parseInt(document.getElementById('editOrderIndex').value);
+      if (isNaN(idx) || !orders[idx]) return;
+
+      const updated = {};
+
+      // 1. Định danh
+      updated.id = document.getElementById('f_id').value.trim().toUpperCase();
+      updated.status = document.getElementById('f_status').value;
+      updated.email = document.getElementById('f_email').value.trim().toLowerCase();
+      updated.nickname = document.getElementById('f_nickname').value.trim();
+      updated.zalo = document.getElementById('f_zalo').value.trim();
+
+      // 2. Gói cước & Giá tiền
+      updated.method = document.getElementById('f_method').value.trim();
+      updated.pkgId = document.getElementById('f_pkgId').value.trim();
+      updated.pkgName = document.getElementById('f_pkgName').value.trim();
+      updated.pkgData = document.getElementById('f_pkgData').value.trim();
+      updated.pkg = document.getElementById('f_pkg').value.trim();
+      updated.qty = parseInt(document.getElementById('f_qty').value) || 1;
+      
+      const daysVal = document.getElementById('f_days').value.trim();
+      updated.days = daysVal !== "" ? Number(daysVal) : "";
+
+      const vndVal = document.getElementById('f_totalVnd').value.trim();
+      updated.totalVnd = vndVal !== "" ? Number(vndVal) : "";
+
+      const cnyVal = document.getElementById('f_totalCny').value.trim();
+      updated.totalCny = cnyVal !== "" ? Number(cnyVal) : "";
+
+      // 3. Thời gian & Hạn
+      updated.date = document.getElementById('f_date').value.trim();
+      updated.dateCreated = document.getElementById('f_dateCreated').value.trim();
+      updated.createdTs = Number(document.getElementById('f_createdTs').value) || 0;
+      updated.expDate = document.getElementById('f_expDate').value.trim();
+      updated.expFinal = document.getElementById('f_expFinal').value === 'true';
+      
+      const paidVal = document.getElementById('f_paidAt').value.trim();
+      updated.paidAt = paidVal !== "" ? Number(paidVal) : "";
+
+      // 4. Hệ thống & Định tuyến
+      updated.fulfilledAt = document.getElementById('f_fulfilledAt').value.trim();
+      updated.workerUrl = document.getElementById('f_workerUrl').value.trim();
+      updated.sourceWeb = document.getElementById('f_sourceWeb').value.trim();
+      updated.orderType = document.getElementById('f_orderType').value.trim();
+      updated.needSupport = document.getElementById('f_needSupport').value === 'true';
+      updated.reason = document.getElementById('f_reason').value.trim();
+
+      // 5. Link Sub
+      updated.info1 = document.getElementById('f_info1').value.trim();
+      updated.info2 = document.getElementById('f_info2').value.trim();
+      updated.info3 = document.getElementById('f_info3').value.trim();
+
+      // 6. Khóa
+      try {
+        const parsedLock = JSON.parse(document.getElementById('f_lockInfo').value.trim());
+        updated.lockInfo = (parsedLock && typeof parsedLock === 'object' && !Array.isArray(parsedLock)) ? parsedLock : {};
+      } catch {
+        updated.lockInfo = {};
+      }
+      updated.lockAuto = document.getElementById('f_lockAuto').value === 'true';
+      updated.lockExpiry = document.getElementById('f_lockExpiry').value === 'true';
+
+      // 7. Nâng cấp & Mail
+      updated.isUpgrade = document.getElementById('f_isUpgrade').value === 'true';
+      const uStat = document.getElementById('f_upgradeStatus').value.trim();
+      updated.upgradeStatus = (uStat === 'null' || !uStat) ? null : uStat;
+      updated.upgradedAt = Number(document.getElementById('f_upgradedAt').value) || 0;
+      updated.lastMailTrack = document.getElementById('f_lastMailTrack').value.trim();
+
+      const pUpg = document.getElementById('f_pendingUpgrade').value.trim();
+      if (pUpg === 'null' || !pUpg) {
+        updated.pendingUpgrade = null;
+      } else {
+        try { updated.pendingUpgrade = JSON.parse(pUpg); } catch { updated.pendingUpgrade = null; }
+      }
+
+      orders[idx] = normalizeOrder(updated);
+      updateMonthFilterOptions();
+      closeEditModal();
+      renderTable();
+      updateStats();
+      showToast(`Đã lưu thay đổi cho đơn ${orders[idx].id}!`, "success");
+    }
+
+    function closeEditModal() {
+      document.getElementById('editModal').classList.add('hidden');
+    }
+
+    // ================================================================
+    // 6. BATCH ACTIONS & AUTO-FIX
     // ================================================================
     function autoFixAll() {
       if (orders.length === 0) {
@@ -633,15 +1137,12 @@
         const before = JSON.stringify(o);
         const fixed = normalizeOrder(o);
 
-        // Bù ID ngẫu nhiên nếu thiếu
         if (!fixed.id) fixed.id = "DH" + Math.random().toString(36).substring(2, 10).toUpperCase();
 
-        // Bù expDate nếu có days và dateCreated
         if (!fixed.expDate && fixed.days && fixed.dateCreated) {
           fixed.expDate = addDaysToDmy(fixed.dateCreated, fixed.days);
         }
 
-        // Tự tính days nếu bị rỗng
         if (fixed.days === "" && fixed.expDate && fixed.dateCreated) {
           const diff = calcDaysBetween(fixed.dateCreated, fixed.expDate);
           if (diff > 0) fixed.days = diff;
@@ -651,6 +1152,7 @@
         return fixed;
       });
 
+      updateMonthFilterOptions();
       renderTable();
       updateStats();
       showToast(`Đã tự động chuẩn hóa toàn bộ! (${fixedCount} đơn đã được cập nhật)`, "success");
@@ -697,7 +1199,7 @@
     }
 
     // ================================================================
-    // 5. EXPORT & COPY JSON 1 DÒNG
+    // 7. EXPORT & COPY JSON 1 DÒNG
     // ================================================================
     function getMinifiedJson() {
       const cleanOrders = orders.map(normalizeOrder);
@@ -785,45 +1287,6 @@
       document.getElementById('jsonModal').classList.add('hidden');
     }
 
-    // ================================================================
-    // 6. THAO TÁC DÒNG
-    // ================================================================
-    function toggleSelectRow(idx, cb) {
-      if (cb.checked) selectedIndices.add(idx);
-      else selectedIndices.delete(idx);
-      updateSelectionBar();
-    }
-
-    function toggleSelectAll(cb) {
-      if (cb.checked) orders.forEach((_, idx) => selectedIndices.add(idx));
-      else selectedIndices.clear();
-      renderTable();
-      updateSelectionBar();
-    }
-
-    function updateSelectionBar() {
-      const bar = document.getElementById('btnDeleteSelected');
-      const cnt = document.getElementById('selectedCount');
-      if (selectedIndices.size > 0) {
-        bar.classList.remove('hidden');
-        bar.classList.add('flex');
-        cnt.innerText = selectedIndices.size;
-      } else {
-        bar.classList.add('hidden');
-        bar.classList.remove('flex');
-      }
-    }
-
-    function deleteSelectedRows() {
-      if (!confirm(`Xóa ${selectedIndices.size} dòng đã chọn?`)) return;
-      orders = orders.filter((_, idx) => !selectedIndices.has(idx));
-      selectedIndices.clear();
-      renderTable();
-      updateStats();
-      updateSelectionBar();
-      showToast("Đã xóa các dòng đã chọn!", "success");
-    }
-
     function addNewRow() {
       const now = Date.now();
       const newOrder = normalizeOrder({
@@ -837,24 +1300,22 @@
         lockInfo: {}
       });
       orders.unshift(newOrder);
+      updateMonthFilterOptions();
       renderTable();
       updateStats();
       showToast("Đã thêm một đơn mới ở đầu bảng!", "success");
+      openEditModal(0);
     }
 
     function deleteRow(idx) {
-      if (!confirm(`Xóa đơn hàng ${orders[idx].id || `#${idx+1}`}?`)) return;
+      if (!confirm(`Xóa đơn hàng ${orders[idx].id || '#' + (idx + 1)}?`)) return;
       orders.splice(idx, 1);
-      selectedIndices.delete(idx);
+      updateMonthFilterOptions();
       renderTable();
       updateStats();
-      updateSelectionBar();
       showToast("Đã xóa đơn hàng!", "success");
     }
 
-    // ================================================================
-    // 7. TIỆN ÍCH CHUNG
-    // ================================================================
     function toggleInputPanel() {
       document.getElementById('inputPanel').classList.toggle('hidden');
     }
