@@ -148,6 +148,9 @@
         <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 text-slate-700 dark:text-slate-300 font-semibold border border-slate-200 dark:border-slate-700">
           <i class="fa-solid fa-coins text-amber-500"></i> Doanh thu: <b id="statVnd" class="text-slate-900 dark:text-white">0đ</b> <span id="statCnyWrap" class="hidden">/ <b id="statCny" class="text-amber-600">0¥</b></span>
         </div>
+        <div class="flex items-center gap-1.5 px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-950/40 text-purple-700 dark:text-purple-300 font-semibold border border-purple-200 dark:border-purple-800/50">
+          <i class="fa-solid fa-database text-purple-500"></i> KV: <b id="statKvSize">0 KB</b>
+        </div>
       </div>
 
       <!-- BỘ LỌC NÂNG CAO: THÁNG, GÓI GIÁ CŨ/MỚI, PHƯƠNG THỨC THANH TOÁN -->
@@ -187,7 +190,25 @@
           <option value="warning">Chỉ đơn có lỗi lệch chuẩn</option>
         </select>
 
+        <!-- BỘ LỌC ĐƠN LỖI CHUYÊN SÂU -->
+        <select id="issueFilter" onchange="renderTable()" class="px-2 py-1 bg-rose-50 dark:bg-rose-950/40 border border-rose-300 dark:border-rose-800 text-rose-700 dark:text-rose-300 font-bold rounded-lg text-xs">
+          <option value="all">🔍 Bộ lọc lỗi (Tất cả)</option>
+          <option value="any_error">⚠️ Tất cả đơn có lỗi</option>
+          <option value="err_pkg">📦 Lỗi gói (pkgId, pkgData, pkgName lệch)</option>
+          <option value="err_date">📅 Lỗi ngày (ngày tạo, hết hạn, createdTs lệch)</option>
+          <option value="err_qty">🔢 Lỗi Qty (qty ≤ 0 hoặc sai số)</option>
+          <option value="err_id">🏷️ Lỗi mã đơn (chứa '-', sai 10 ký tự)</option>
+        </select>
+
         <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
+
+        <!-- 2 NÚT CHUẨN HÓA MỚI -->
+        <button onclick="autoSyncCreatedTsAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Auto sửa createdTs chuẩn epoch mili giây từ date/dateCreated">
+          <i class="fa-solid fa-clock-rotate-left text-emerald-500"></i> Sửa createdTs (ms)
+        </button>
+        <button onclick="autoNormalizeOrderCodesAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Chuẩn hóa DH-XXXXXXXXXX thành DHXXXXXXXXXX (DH + đúng 10 ký tự)">
+          <i class="fa-solid fa-barcode text-indigo-500"></i> Chuẩn hóa mã DH
+        </button>
 
         <button onclick="calcMissingDays()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Tự tính số ngày (days) dựa trên khoảng cách giữa ngày tạo và ngày hết hạn">
           <i class="fa-regular fa-calendar-plus text-blue-500"></i> Tính ngày
@@ -334,9 +355,18 @@
 
         <!-- NHÓM 2: GÓI CƯỚC & GIÁ TIỀN -->
         <div>
-          <h4 class="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 mb-2 flex items-center gap-1.5">
-            <i class="fa-solid fa-box"></i> 2. Gói cước & Giá tiền
-          </h4>
+          <div class="flex items-center justify-between mb-2">
+            <h4 class="font-bold text-xs uppercase tracking-wider text-amber-600 dark:text-amber-400 flex items-center gap-1.5">
+              <i class="fa-solid fa-box"></i> 2. Gói cước & Giá tiền
+            </h4>
+            <!-- DROPBOX CHỌN SẴN GÓI MẪU -->
+            <div class="flex items-center gap-2">
+              <span class="text-[11px] font-bold text-amber-600 dark:text-amber-400"><i class="fa-solid fa-bolt"></i> Chọn gói mẫu (Dropbox):</span>
+              <select id="f_pkgSelect" onchange="onSelectModalPreset(this.value)" class="p-1 px-2.5 rounded-lg border border-amber-300 dark:border-amber-700 bg-amber-50 dark:bg-amber-950/60 font-bold text-xs text-amber-800 dark:text-amber-200 focus:outline-none">
+                <option value="">-- Chọn gói mẫu để tự điền 4 ô --</option>
+              </select>
+            </div>
+          </div>
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-9 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
             <div class="lg:col-span-2">
               <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">method:</label>
@@ -385,11 +415,18 @@
           <div class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-4 lg:grid-cols-7 gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
             <div class="lg:col-span-2">
               <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">date (Giờ tạo chi tiết):</label>
-              <input type="text" id="f_date" placeholder="DD/MM/YYYY HH:mm" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+              <input type="text" id="f_date" oninput="syncModalCreatedTs()" placeholder="DD/MM/YYYY HH:mm" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
             </div>
             <div>
               <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">dateCreated:</label>
-              <input type="text" id="f_dateCreated" placeholder="DD/MM/YYYY" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+              <input type="text" id="f_dateCreated" oninput="syncModalCreatedTs()" placeholder="DD/MM/YYYY" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono">
+            </div>
+            <div>
+              <div class="flex items-center justify-between mb-1">
+                <label class="font-semibold text-slate-600 dark:text-slate-400">createdTs (ms):</label>
+                <button type="button" onclick="syncModalCreatedTs()" class="text-[10px] text-blue-600 dark:text-blue-400 hover:underline font-bold">Auto ms</button>
+              </div>
+              <input type="number" id="f_createdTs" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
             </div>
             <div>
               <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">createdTs (ms):</label>
@@ -600,6 +637,53 @@
 
     let orders = [];
     let isPrettyMode = false;
+
+    // ================================================================
+    // DANH MỤC GÓI MẪU QUY CHUẨN ĐỂ CHỌN SẴN TRONG DROPBOX
+    // ================================================================
+    const PRESET_PACKAGES = [
+      { pkgId: "t1",  pkgName: "Gói 1 Tháng",           pkgData: "100GB",          pkg: "Gói 1 Tháng (100GB)",                   days: 30 },
+      { pkgId: "t3",  pkgName: "Gói 3 Tháng",           pkgData: "300GB",          pkg: "Gói 3 Tháng (300GB)",                   days: 90 },
+      { pkgId: "t6",  pkgName: "Gói 6 Tháng",           pkgData: "600GB",          pkg: "Gói 6 Tháng (600GB)",                   days: 180 },
+      { pkgId: "t12", pkgName: "Gói 1 Năm",             pkgData: "1200GB",         pkg: "Gói 1 Năm (1200GB)",                    days: 365 },
+      { pkgId: "c1",  pkgName: "Gói Cố Định 1 Tháng",   pkgData: "200GB",          pkg: "Gói Cố Định 1 Tháng (200GB)",           days: 30 },
+      { pkgId: "c3",  pkgName: "Gói Cố Định 3 Tháng",   pkgData: "600GB",          pkg: "Gói Cố Định 3 Tháng (600GB)",           days: 90 },
+      { pkgId: "o1",  pkgName: "Gói Giá Cũ 1 Tháng",    pkgData: "100GB",          pkg: "Gói Giá Cũ 1 Tháng (100GB) - giá cũ",   days: 30 },
+      { pkgId: "o2",  pkgName: "Gói Giá Cũ 3 Tháng",    pkgData: "300GB",          pkg: "Gói Giá Cũ 3 Tháng (300GB) - giá cũ",   days: 90 },
+      { pkgId: "o3",  pkgName: "Gói Giá Cũ 6 Tháng",    pkgData: "600GB",          pkg: "Gói Giá Cũ 6 Tháng (600GB) - giá cũ",   days: 180 },
+      { pkgId: "max", pkgName: "Gói Max Băng Thông",    pkgData: "Không giới hạn", pkg: "Gói Max Băng Thông (Không giới hạn)",   days: 30 }
+    ];
+
+    function updatePkgSelectOptions() {
+      const sel = document.getElementById('f_pkgSelect');
+      if (!sel) return;
+      let opts = '<option value="">-- Chọn gói mẫu để tự điền 4 ô --</option>';
+      PRESET_PACKAGES.forEach((p, idx) => {
+        opts += `<option value="${idx}">${p.pkgId} — ${p.pkgName} (${p.pkgData})</option>`;
+      });
+      sel.innerHTML = opts;
+    }
+
+    function onSelectModalPreset(idxVal) {
+      if (idxVal === "") return;
+      const p = PRESET_PACKAGES[Number(idxVal)];
+      if (!p) return;
+      document.getElementById('f_pkgId').value = p.pkgId;
+      document.getElementById('f_pkgName').value = p.pkgName;
+      document.getElementById('f_pkgData').value = p.pkgData;
+      document.getElementById('f_pkg').value = p.pkg;
+      if (p.days && !document.getElementById('f_days').value) {
+        document.getElementById('f_days').value = p.days;
+      }
+    }
+
+    function syncModalCreatedTs() {
+      const dVal = document.getElementById('f_date').value.trim() || document.getElementById('f_dateCreated').value.trim();
+      if (dVal) {
+        const ts = parseDateStrToTs(dVal);
+        if (ts > 0) document.getElementById('f_createdTs').value = ts;
+      }
+    }
 
     // ================================================================
     // 2. PARSING & NORMALIZE
@@ -823,16 +907,44 @@
 
       let html = "";
       orders.forEach((o, idx) => {
-        // 1. Kiểm tra cảnh báo
+        // 1. Kiểm tra cảnh báo & lỗi chuẩn hóa
         const warnings = [];
         if (!o.id) warnings.push("Thiếu ID");
+        else if (o.id.includes('-') || !/^DH[A-Z0-9]{10}$/i.test(o.id)) warnings.push("Mã đơn chưa chuẩn DH + 10 ký tự");
         if (typeof o.lockInfo !== 'object' || Array.isArray(o.lockInfo)) warnings.push("lockInfo sai type");
         if (o.days && !o.expDate) warnings.push("Chưa có expDate");
+        if (!o.qty || isNaN(o.qty) || Number(o.qty) <= 0) warnings.push("Qty không hợp lệ");
 
-        // 2. Lọc trạng thái
+        // Kiểm tra khớp gói (pkgId, pkgName, pkgData)
+        const matchedPkg = PRESET_PACKAGES.find(p => p.pkgId === o.pkgId);
+        if (matchedPkg) {
+          if (o.pkgName && o.pkgName !== matchedPkg.pkgName) warnings.push("pkgName không khớp chuẩn pkgId");
+          if (o.pkgData && o.pkgData !== matchedPkg.pkgData) warnings.push("pkgData không khớp chuẩn pkgId");
+        } else if (!o.pkgId) {
+          warnings.push("Thiếu pkgId");
+        }
+
+        // Kiểm tra ngày tháng & createdTs
+        if (o.dateCreated && o.expDate) {
+          const diff = calcDaysBetween(o.dateCreated, o.expDate);
+          if (diff <= 0) warnings.push("Hạn dùng trước hoặc trùng ngày tạo");
+        }
+        if (o.date && o.createdTs) {
+          const dTs = parseDateStrToTs(o.date);
+          if (dTs > 0 && Math.abs(dTs - o.createdTs) > 60000) warnings.push("createdTs không khớp với date");
+        }
+
+        // 2. Lọc theo Bộ lọc Đơn Lỗi Chuyên Sâu
+        const issueFilter = document.getElementById('issueFilter') ? document.getElementById('issueFilter').value : 'all';
+        if (issueFilter === 'any_error' && warnings.length === 0) return;
+        if (issueFilter === 'err_pkg' && !warnings.some(w => w.includes("pkg"))) return;
+        if (issueFilter === 'err_date' && !warnings.some(w => w.includes("ngày") || w.includes("createdTs") || w.includes("Hạn dùng"))) return;
+        if (issueFilter === 'err_qty' && !warnings.some(w => w.includes("Qty"))) return;
+        if (issueFilter === 'err_id' && !warnings.some(w => w.includes("ID") || w.includes("Mã đơn"))) return;
+
+        // 3. Lọc trạng thái
         if (statusFilter === 'warning' && warnings.length === 0) return;
         if (statusFilter !== 'all' && statusFilter !== 'warning' && o.status !== statusFilter) return;
-
         // 3. Lọc theo Tháng (MM/YYYY)
         if (monthFilter !== 'all') {
           const dStr = o.dateCreated || (o.date ? o.date.split(" ")[0] : "");
@@ -968,9 +1080,9 @@
 
       const jsonStr = JSON.stringify(orders);
       const bytes = new Blob([jsonStr]).size;
-      document.getElementById('statKvSize').innerText = `${(bytes / 1024).toFixed(2)} KB`;
+      const elKv = document.getElementById('statKvSize');
+      if (elKv) elKv.innerText = `${(bytes / 1024).toFixed(2)} KB`;
     }
-
     // ================================================================
     // 5. MODAL CHỈNH SỬA TOÀN BỘ 37 TRƯỜNG DỮ LIỆU
     // ================================================================
@@ -994,6 +1106,11 @@
       document.getElementById('f_pkgName').value = o.pkgName || '';
       document.getElementById('f_pkgData').value = o.pkgData || '';
       document.getElementById('f_pkg').value = o.pkg || '';
+      updatePkgSelectOptions();
+      const pIdx = PRESET_PACKAGES.findIndex(p => p.pkgId === o.pkgId);
+      if (document.getElementById('f_pkgSelect')) {
+        document.getElementById('f_pkgSelect').value = pIdx >= 0 ? pIdx : '';
+      }
       document.getElementById('f_qty').value = o.qty !== undefined ? o.qty : 1;
       document.getElementById('f_days').value = o.days !== undefined ? o.days : '';
       document.getElementById('f_totalVnd').value = o.totalVnd !== undefined ? o.totalVnd : '';
@@ -1127,6 +1244,62 @@
     // ================================================================
     // 6. BATCH ACTIONS & AUTO-FIX
     // ================================================================
+    // 1. TỰ ĐỘNG ĐỒNG BỘ CREATEDTS CHUẨN EPOCH MILI GIÂY TỪ DATE/DATECREATED
+    function autoSyncCreatedTsAll() {
+      if (!orders || orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      let count = 0;
+      orders.forEach(o => {
+        const rawDate = o.date || o.dateCreated;
+        if (rawDate) {
+          const ts = parseDateStrToTs(rawDate);
+          if (ts > 0 && o.createdTs !== ts) {
+            o.createdTs = ts;
+            count++;
+          }
+        }
+      });
+      renderTable();
+      updateStats();
+      showToast(`Đã đồng bộ chuẩn epoch mili giây createdTs cho ${count} đơn!`, "success");
+    }
+
+    // 2. CHUẨN HÓA MÃ ĐƠN HÀNG (DH-XXXXXXXXXX -> DHXXXXXXXXXX, ĐƠN 8-9 KÝ TỰ BÙ ĐỦ 10)
+    function autoNormalizeOrderCodesAll() {
+      if (!orders || orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      let count = 0;
+      orders.forEach(o => {
+        let code = String(o.id || "").trim().toUpperCase();
+        if (!code) {
+          o.id = "DH" + Math.random().toString(36).substring(2, 12).toUpperCase();
+          count++;
+          return;
+        }
+        let clean = code.replace(/[\-\s]/g, '');
+        let suffix = clean.startsWith("DH") ? clean.slice(2) : clean;
+
+        if (suffix.length < 10) {
+          suffix = suffix.padEnd(10, '0');
+        } else if (suffix.length > 10) {
+          suffix = suffix.slice(0, 10);
+        }
+
+        const newId = "DH" + suffix;
+        if (o.id !== newId) {
+          o.id = newId;
+          count++;
+        }
+      });
+      renderTable();
+      updateStats();
+      showToast(`Đã chuẩn hóa mã đơn hàng (DH + 10 ký tự) cho ${count} đơn!`, "success");
+    }
+
     function autoFixAll() {
       if (orders.length === 0) {
         showToast("Không có đơn hàng nào để chuẩn hóa!", "error");
@@ -1137,7 +1310,20 @@
         const before = JSON.stringify(o);
         const fixed = normalizeOrder(o);
 
-        if (!fixed.id) fixed.id = "DH" + Math.random().toString(36).substring(2, 10).toUpperCase();
+        // Chuẩn hóa ID thành DH + đúng 10 ký tự
+        let code = String(fixed.id || "").trim().toUpperCase().replace(/[\-\s]/g, '');
+        let suffix = code.startsWith("DH") ? code.slice(2) : code;
+        if (!suffix) suffix = Math.random().toString(36).substring(2, 12).toUpperCase();
+        if (suffix.length < 10) suffix = suffix.padEnd(10, '0');
+        else if (suffix.length > 10) suffix = suffix.slice(0, 10);
+        fixed.id = "DH" + suffix;
+
+        // Tự động đồng bộ createdTs epoch mili giây
+        const rawDate = fixed.date || fixed.dateCreated;
+        if (rawDate) {
+          const ts = parseDateStrToTs(rawDate);
+          if (ts > 0) fixed.createdTs = ts;
+        }
 
         if (!fixed.expDate && fixed.days && fixed.dateCreated) {
           fixed.expDate = addDaysToDmy(fixed.dateCreated, fixed.days);
