@@ -48,11 +48,19 @@
     padding: 6px 12px;
   }
   
-  /* Ghim cố định 3 cột đầu bên trái khi cuộn ngang */
+  /* Ghim cố định 3 cột đầu bên trái khi cuộn ngang và tạo đổ bóng phân cách */
   .sticky-col-1 { position: sticky; left: 0; z-index: 25; }
   .sticky-col-2 { position: sticky; left: 44px; z-index: 25; }
-  .sticky-col-3 { position: sticky; left: 96px; z-index: 25; }
+  .sticky-col-3 { position: sticky; left: 96px; z-index: 25; box-shadow: 2px 0 6px -2px rgba(0, 0, 0, 0.12); }
   th.sticky-col-1, th.sticky-col-2, th.sticky-col-3 { z-index: 35; }
+  
+  /* Hiệu ứng sọc hàng xen kẽ mượt mà */
+  tbody tr:nth-child(even) td:not(.sticky-col-1):not(.sticky-col-2):not(.sticky-col-3) {
+    background-color: rgba(248, 250, 252, 0.6);
+  }
+  .dark tbody tr:nth-child(even) td:not(.sticky-col-1):not(.sticky-col-2):not(.sticky-col-3) {
+    background-color: rgba(15, 23, 42, 0.4);
+  }
 </style>
 </head>
 <body class="bg-slate-100 text-slate-800 dark:bg-slate-950 dark:text-slate-100 h-full flex flex-col antialiased">
@@ -81,8 +89,8 @@
         <button onclick="autoFixAll()" class="px-3.5 py-1.5 rounded-lg text-xs font-bold bg-gradient-to-r from-emerald-600 to-teal-600 hover:from-emerald-500 hover:to-teal-500 text-white shadow-sm transition flex items-center gap-1.5 active:scale-95">
           <i class="fa-solid fa-wand-magic-sparkles"></i> <span>CHUẨN HÓA TOÀN BỘ (AUTO-FIX)</span>
         </button>
-        <button onclick="copyMinifiedJson()" class="px-4 py-1.5 rounded-lg text-xs font-black bg-blue-600 hover:bg-blue-500 text-white shadow-md shadow-blue-600/30 transition flex items-center gap-1.5 active:scale-95">
-          <i class="fa-regular fa-copy"></i> <span>COPY JSON 1 DÒNG (KV READY)</span>
+        <button onclick="copyMinifiedJson()" class="px-4 py-1.5 rounded-lg text-xs font-extrabold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow-md shadow-blue-600/30 transition flex items-center gap-1.5 active:scale-95" title="Lưu toàn bộ chỉnh sửa, chuẩn hóa 37 cột và sao chép JSON 1 dòng vào Clipboard">
+          <i class="fa-solid fa-floppy-disk"></i> <span>LƯU & XUẤT JSON 1 DÒNG (KV READY)</span>
         </button>
         <button onclick="openJsonModal()" class="px-3 py-1.5 rounded-lg text-xs font-semibold bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-200 transition flex items-center gap-1.5 border border-slate-200 dark:border-slate-700">
           <i class="fa-solid fa-eye"></i> <span>Xem JSON</span>
@@ -202,21 +210,26 @@
 
         <div class="h-4 w-px bg-slate-200 dark:bg-slate-700 mx-1"></div>
 
-        <!-- 2 NÚT CHUẨN HÓA MỚI -->
-        <button onclick="autoSyncCreatedTsAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Auto sửa createdTs chuẩn epoch mili giây từ date/dateCreated">
-          <i class="fa-solid fa-clock-rotate-left text-emerald-500"></i> Sửa createdTs (ms)
+        <!-- CÁC NÚT CHỨC NĂNG CHUẨN HÓA THÔNG MINH -->
+        <button onclick="autoNormalizeDateTimeAll()" class="px-2.5 py-1 rounded-md bg-emerald-50 dark:bg-emerald-950/40 hover:bg-emerald-100 dark:hover:bg-emerald-900/50 text-emerald-700 dark:text-emerald-300 font-bold transition flex items-center gap-1 border border-emerald-300 dark:border-emerald-800" title="Chuẩn hóa date & dateCreated thành DD/MM/YYYY HH:mm và đồng bộ createdTs (ms)">
+          <i class="fa-solid fa-clock text-emerald-500"></i> Chuẩn hóa Giờ & Ngày
         </button>
-        <button onclick="autoNormalizeOrderCodesAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Chuẩn hóa DH-XXXXXXXXXX thành DHXXXXXXXXXX (DH + đúng 10 ký tự)">
-          <i class="fa-solid fa-barcode text-indigo-500"></i> Chuẩn hóa mã DH
+        <button onclick="autoNormalizePackagesAll()" class="px-2.5 py-1 rounded-md bg-amber-50 dark:bg-amber-950/40 hover:bg-amber-100 dark:hover:bg-amber-900/50 text-amber-700 dark:text-amber-300 font-bold transition flex items-center gap-1 border border-amber-300 dark:border-amber-800" title="Chuẩn hóa mã gói t1, t2, c1, c2, c3, d2, d3... dựa theo giá tiền">
+          <i class="fa-solid fa-tags text-amber-500"></i> Chuẩn hóa Gói Theo Giá
         </button>
-
-        <button onclick="calcMissingDays()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Tự tính số ngày (days) dựa trên khoảng cách giữa ngày tạo và ngày hết hạn">
-          <i class="fa-regular fa-calendar-plus text-blue-500"></i> Tính ngày
+        <button onclick="autoSyncQtyDaysAll()" class="px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold transition flex items-center gap-1 border border-blue-300 dark:border-blue-800" title="Đồng bộ 1 Qty = 30 Days (vd: 35 days vẫn là 1 qty)">
+          <i class="fa-solid fa-arrows-rotate text-blue-500"></i> Đồng bộ Qty & Days
         </button>
-        <button onclick="fixLockInfoAll()" class="px-2.5 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Ép lockInfo về JSON Object {}">
-          <i class="fa-solid fa-lock text-amber-500"></i> Sửa lockInfo
+        <button onclick="sortOrdersByDateAsc()" class="px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-bold transition flex items-center gap-1 border border-purple-300 dark:border-purple-800" title="Sắp xếp toàn bộ dữ liệu đơn hàng theo ngày tạo từ Cũ đến Mới">
+          <i class="fa-solid fa-arrow-down-short-wide text-purple-500"></i> Sắp xếp Cũ ➔ Mới
         </button>
-        <button onclick="addNewRow()" class="px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold transition flex items-center gap-1 border border-blue-200 dark:border-blue-800">
+        <button onclick="autoNormalizeOrderCodesAll()" class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Chuẩn hóa DH-XXXXXXXXXX thành DHXXXXXXXXXX (DH + đúng 10 ký tự)">
+          <i class="fa-solid fa-barcode text-indigo-500"></i> Mã DH
+        </button>
+        <button onclick="fixLockInfoAll()" class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-medium transition" title="Ép lockInfo về JSON Object {}">
+          <i class="fa-solid fa-lock text-amber-500"></i> lockInfo
+        </button>
+        <button onclick="addNewRow()" class="px-2.5 py-1 rounded-md bg-blue-600 hover:bg-blue-500 text-white font-bold transition flex items-center gap-1 shadow-sm">
           <i class="fa-solid fa-plus"></i> Thêm đơn
         </button>
       </div>
@@ -429,10 +442,6 @@
               <input type="number" id="f_createdTs" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
             </div>
             <div>
-              <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">createdTs (ms):</label>
-              <input type="number" id="f_createdTs" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono text-[11px]">
-            </div>
-            <div>
               <label class="block font-semibold mb-1 text-slate-600 dark:text-slate-400">expDate (Hạn dùng):</label>
               <input type="text" id="f_expDate" placeholder="DD/MM/YYYY / Vĩnh viễn" class="w-full p-2 rounded-lg border border-slate-300 dark:border-slate-700 bg-white dark:bg-slate-900 font-mono font-bold text-emerald-600">
             </div>
@@ -642,16 +651,17 @@
     // DANH MỤC GÓI MẪU QUY CHUẨN ĐỂ CHỌN SẴN TRONG DROPBOX
     // ================================================================
     const PRESET_PACKAGES = [
-      { pkgId: "t1",  pkgName: "Gói 1 Tháng",           pkgData: "100GB",          pkg: "Gói 1 Tháng (100GB)",                   days: 30 },
-      { pkgId: "t3",  pkgName: "Gói 3 Tháng",           pkgData: "300GB",          pkg: "Gói 3 Tháng (300GB)",                   days: 90 },
-      { pkgId: "t6",  pkgName: "Gói 6 Tháng",           pkgData: "600GB",          pkg: "Gói 6 Tháng (600GB)",                   days: 180 },
-      { pkgId: "t12", pkgName: "Gói 1 Năm",             pkgData: "1200GB",         pkg: "Gói 1 Năm (1200GB)",                    days: 365 },
-      { pkgId: "c1",  pkgName: "Gói Cố Định 1 Tháng",   pkgData: "200GB",          pkg: "Gói Cố Định 1 Tháng (200GB)",           days: 30 },
-      { pkgId: "c3",  pkgName: "Gói Cố Định 3 Tháng",   pkgData: "600GB",          pkg: "Gói Cố Định 3 Tháng (600GB)",           days: 90 },
-      { pkgId: "o1",  pkgName: "Gói Giá Cũ 1 Tháng",    pkgData: "100GB",          pkg: "Gói Giá Cũ 1 Tháng (100GB) - giá cũ",   days: 30 },
-      { pkgId: "o2",  pkgName: "Gói Giá Cũ 3 Tháng",    pkgData: "300GB",          pkg: "Gói Giá Cũ 3 Tháng (300GB) - giá cũ",   days: 90 },
-      { pkgId: "o3",  pkgName: "Gói Giá Cũ 6 Tháng",    pkgData: "600GB",          pkg: "Gói Giá Cũ 6 Tháng (600GB) - giá cũ",   days: 180 },
-      { pkgId: "max", pkgName: "Gói Max Băng Thông",    pkgData: "Không giới hạn", pkg: "Gói Max Băng Thông (Không giới hạn)",   days: 30 }
+      { pkgId: "t1",     pkgName: "Gói 1 tháng",    pkgData: "100GB",          pkg: "Gói 1 tháng (100GB · 60,000VND)",         days: 30,  price: 60000 },
+      { pkgId: "t2",     pkgName: "Gói 1 tháng",    pkgData: "500GB",          pkg: "Gói 1 tháng (500GB · 70,000VND)",         days: 30,  price: 70000 },
+      { pkgId: "c1",     pkgName: "Gói 1 tháng",    pkgData: "1000GB",         pkg: "Gói 1 tháng (1000GB · 80,000VND)",        days: 30,  price: 80000 },
+      { pkgId: "c2",     pkgName: "Gói Cao Cấp",    pkgData: "3000GB",         pkg: "Gói Cao Cấp (3000GB · 160,000VND)",       days: 30,  price: 160000 },
+      { pkgId: "c3",     pkgName: "Gói 1 Năm",      pkgData: "1000GB/tháng",   pkg: "Gói 1 Năm (1000GB/tháng · 840,000VND)",   days: 365, price: 840000 },
+      { pkgId: "d2",     pkgName: "Không Giới Hạn", pkgData: "1000GB",         pkg: "Không Giới Hạn (1000GB · 399,000VND)",    days: 9999, price: 399000 },
+      { pkgId: "d3",     pkgName: "Không Giới Hạn", pkgData: "5000GB",         pkg: "Không Giới Hạn (5000GB · 999,000VND)",    days: 9999, price: 999000 },
+      { pkgId: "custom", pkgName: "Gói Tùy Chọn",   pkgData: "100GB - 100,000GB", pkg: "Gói Tùy Chọn (100GB - 100,000GB)",     days: 30,  price: 0 },
+      { pkgId: "o1",     pkgName: "Gói Giá Cũ 1 Tháng", pkgData: "100GB",      pkg: "Gói Giá Cũ 1 Tháng (100GB) - giá cũ",   days: 30,  price: 0 },
+      { pkgId: "o2",     pkgName: "Gói Giá Cũ 3 Tháng", pkgData: "300GB",      pkg: "Gói Giá Cũ 3 Tháng (300GB) - giá cũ",   days: 90,  price: 0 },
+      { pkgId: "o3",     pkgName: "Gói Giá Cũ 6 Tháng", pkgData: "600GB",      pkg: "Gói Giá Cũ 6 Tháng (600GB) - giá cũ",   days: 180, price: 0 }
     ];
 
     function updatePkgSelectOptions() {
@@ -791,22 +801,89 @@
       return `${String(d.getDate()).padStart(2, '0')}/${String(d.getMonth() + 1).padStart(2, '0')}/${d.getFullYear()} ${String(d.getHours()).padStart(2, '0')}:${String(d.getMinutes()).padStart(2, '0')}`;
     }
 
+    // Nhận diện linh hoạt mọi định dạng ngày/giờ và trả về timestamp (ms)
     function parseDateStrToTs(str) {
       if (!str) return 0;
-      const parts = str.trim().split(" ");
-      const dParts = parts[0].split("/");
-      if (dParts.length < 3) return 0;
-      const day = parseInt(dParts[0]);
-      const mon = parseInt(dParts[1]) - 1;
-      const yr = parseInt(dParts[2]);
-      let hr = 0, min = 0;
-      if (parts[1]) {
-        const tParts = parts[1].split(":");
-        hr = parseInt(tParts[0]) || 0;
-        min = parseInt(tParts[1]) || 0;
+      const s = String(str).trim();
+
+      // Dạng 1: Giờ trước, ngày sau (vd: 11:25:27 15/10/2026 hoặc 11:25 15/10/2026)
+      const m1 = s.match(/^(\d{1,2}):(\d{1,2})(?::\d{1,2})?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m1) {
+        const [, hr, min, day, mon, yr] = m1;
+        const d = new Date(parseInt(yr), parseInt(mon) - 1, parseInt(day), parseInt(hr), parseInt(min));
+        return isNaN(d.getTime()) ? 0 : d.getTime();
       }
-      const d = new Date(yr, mon, day, hr, min);
-      return isNaN(d.getTime()) ? 0 : d.getTime();
+
+      // Dạng 2: Ngày trước, giờ sau (vd: 15/10/2026 11:25:27 hoặc 15/10/2026 11:25)
+      const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})(?:\s+(\d{1,2}):(\d{1,2})(?::\d{1,2})?)?$/);
+      if (m2) {
+        const [, day, mon, yr, hr, min] = m2;
+        const d = new Date(parseInt(yr), parseInt(mon) - 1, parseInt(day), parseInt(hr) || 0, parseInt(min) || 0);
+        return isNaN(d.getTime()) ? 0 : d.getTime();
+      }
+
+      // Dạng 3: Chuỗi chuẩn ISO / Date hợp lệ
+      const dt = new Date(s);
+      return isNaN(dt.getTime()) ? 0 : dt.getTime();
+    }
+
+    // Chuẩn hóa mọi chuỗi ngày giờ về định dạng duy nhất DD/MM/YYYY HH:mm
+    function normalizeDateString(str, fallbackTs) {
+      if (!str && fallbackTs) {
+        const d = new Date(fallbackTs);
+        if (!isNaN(d.getTime())) {
+          const dd = String(d.getDate()).padStart(2, '0');
+          const mm = String(d.getMonth() + 1).padStart(2, '0');
+          const yyyy = d.getFullYear();
+          const hh = String(d.getHours()).padStart(2, '0');
+          const mi = String(d.getMinutes()).padStart(2, '0');
+          return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+        }
+        return "";
+      }
+      if (!str) return "";
+      const s = String(str).trim();
+
+      // Giờ trước, ngày sau: 11:25:27 15/10/2026 -> 15/10/2026 11:25
+      const m1 = s.match(/^(\d{1,2}):(\d{1,2})(?::\d{1,2})?\s+(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m1) {
+        const [, hr, min, day, mon, yr] = m1;
+        return `${day.padStart(2, '0')}/${mon.padStart(2, '0')}/${yr} ${hr.padStart(2, '0')}:${min.padStart(2, '0')}`;
+      }
+
+      // Ngày trước, giờ sau: 15/10/2026 11:25:27 -> 15/10/2026 11:25
+      const m2 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})\s+(\d{1,2}):(\d{1,2})(?::\d{1,2})?$/);
+      if (m2) {
+        const [, day, mon, yr, hr, min] = m2;
+        return `${day.padStart(2, '0')}/${mon.padStart(2, '0')}/${yr} ${hr.padStart(2, '0')}:${min.padStart(2, '0')}`;
+      }
+
+      // Chỉ có ngày DD/MM/YYYY
+      const m3 = s.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+      if (m3) {
+        const [, day, mon, yr] = m3;
+        let hr = "00", min = "00";
+        if (fallbackTs) {
+          const d = new Date(fallbackTs);
+          if (!isNaN(d.getTime())) {
+            hr = String(d.getHours()).padStart(2, '0');
+            min = String(d.getMinutes()).padStart(2, '0');
+          }
+        }
+        return `${day.padStart(2, '0')}/${mon.padStart(2, '0')}/${yr} ${hr}:${min}`;
+      }
+
+      const d = new Date(s);
+      if (!isNaN(d.getTime())) {
+        const dd = String(d.getDate()).padStart(2, '0');
+        const mm = String(d.getMonth() + 1).padStart(2, '0');
+        const yyyy = d.getFullYear();
+        const hh = String(d.getHours()).padStart(2, '0');
+        const mi = String(d.getMinutes()).padStart(2, '0');
+        return `${dd}/${mm}/${yyyy} ${hh}:${mi}`;
+      }
+
+      return s;
     }
 
     function addDaysToDmy(dmyStr, numDays) {
@@ -1244,6 +1321,182 @@
     // ================================================================
     // 6. BATCH ACTIONS & AUTO-FIX
     // ================================================================
+    // ================================================================
+    // CÁC HÀM CHUẨN HÓA THÔNG MINH MỚI
+    // ================================================================
+    
+    // 1. CHUẨN HÓA NGÀY GIỜ: date -> DD/MM/YYYY HH:mm, ĐỒNG BỘ dateCreated VÀ createdTs (ms)
+    function autoNormalizeDateTimeAll() {
+      if (!orders || orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      let count = 0;
+      orders.forEach(o => {
+        const rawDate = o.date || o.dateCreated;
+        const normalized = normalizeDateString(rawDate, o.createdTs);
+        if (normalized) {
+          const ts = parseDateStrToTs(normalized);
+          let changed = false;
+          if (o.date !== normalized) { o.date = normalized; changed = true; }
+          if (o.dateCreated !== normalized) { o.dateCreated = normalized; changed = true; }
+          if (ts > 0 && o.createdTs !== ts) { o.createdTs = ts; changed = true; }
+          if (changed) count++;
+        }
+      });
+      updateMonthFilterOptions();
+      renderTable();
+      updateStats();
+      showToast(`Đã chuẩn hóa Ngày & Giờ (DD/MM/YYYY HH:mm) cho ${count} đơn!`, "success");
+    }
+
+    // 2. ĐỒNG BỘ QTY VÀ DAYS: 1 Qty = 30 Days (vd: 35 days vẫn là 1 qty)
+    function autoSyncQtyDaysAll() {
+      if (!orders || orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      let count = 0;
+      orders.forEach(o => {
+        let changed = false;
+        const hasQty = (o.qty !== "" && o.qty !== null && o.qty !== undefined && !isNaN(o.qty) && Number(o.qty) > 0);
+        const hasDays = (o.days !== "" && o.days !== null && o.days !== undefined && !isNaN(o.days) && Number(o.days) > 0);
+
+        if (hasQty && !hasDays) {
+          o.days = Math.floor(Number(o.qty)) * 30;
+          changed = true;
+        } else if (!hasQty && hasDays) {
+          o.qty = Math.floor(Number(o.days) / 30) || 1;
+          changed = true;
+        } else if (hasQty && hasDays) {
+          const expectedQty = Math.floor(Number(o.days) / 30) || 1;
+          if (Number(o.qty) !== expectedQty && Number(o.days) !== Number(o.qty) * 30) {
+            o.qty = expectedQty;
+            changed = true;
+          }
+        } else {
+          o.qty = 1;
+          o.days = 30;
+          changed = true;
+        }
+        if (changed) count++;
+      });
+      renderTable();
+      updateStats();
+      showToast(`Đã đồng bộ Qty và Days (30 ngày/qty) cho ${count} đơn!`, "success");
+    }
+
+    // 3. NHẬN DIỆN VÀ CHUẨN HÓA GÓI THEO GIÁ TIỀN (XỬ LÝ CHUẨN CASE 160K VÀ GIỮ GÓI GIÁ CŨ)
+    function detectPackageByOrder(o) {
+      // Giữ nguyên các gói giá cũ đã định vị trước đó
+      if (['o1', 'o2', 'o3'].includes(o.pkgId) || String(o.pkg).includes('giá cũ')) {
+        return null;
+      }
+
+      const vnd = Number(o.totalVnd) || 0;
+      if (vnd <= 0) return null;
+
+      const qty = Number(o.qty) || 1;
+      const days = Number(o.days) || 0;
+
+      // Gói cố định theo giá đặc biệt
+      if (vnd === 840000) {
+        return { pkgId: "c3", pkgName: "Gói 1 Năm", pkgData: "1000GB/tháng", pkg: "Gói 1 Năm (1000GB/tháng · 840,000VND)", days: 365 };
+      }
+      if (vnd === 399000) {
+        return { pkgId: "d2", pkgName: "Không Giới Hạn", pkgData: "1000GB", pkg: "Không Giới Hạn (1000GB · 399,000VND)", expDate: "Vĩnh viễn" };
+      }
+      if (vnd === 999000) {
+        return { pkgId: "d3", pkgName: "Không Giới Hạn", pkgData: "5000GB", pkg: "Không Giới Hạn (5000GB · 999,000VND)", expDate: "Vĩnh viễn" };
+      }
+
+      // Xử lý case 160,000VND: Phân biệt gói c2 (3000GB 1 tháng) và gói c1 (80k x 2 tháng)
+      if (vnd === 160000) {
+        if (qty === 2 || (days >= 50 && days <= 70) || String(o.pkgData).includes("1000GB") || String(o.pkg).includes("1000GB")) {
+          return { pkgId: "c1", pkgName: "Gói 1 tháng", pkgData: "1000GB", pkg: "Gói 1 tháng (1000GB · 80,000VND)", qty: 2 };
+        } else {
+          return { pkgId: "c2", pkgName: "Gói Cao Cấp", pkgData: "3000GB", pkg: "Gói Cao Cấp (3000GB · 160,000VND)" };
+        }
+      }
+
+      // Đơn giá chuẩn 1 tháng
+      if (vnd === 60000) {
+        return { pkgId: "t1", pkgName: "Gói 1 tháng", pkgData: "100GB", pkg: "Gói 1 tháng (100GB · 60,000VND)" };
+      }
+      if (vnd === 70000) {
+        return { pkgId: "t2", pkgName: "Gói 1 tháng", pkgData: "500GB", pkg: "Gói 1 tháng (500GB · 70,000VND)" };
+      }
+      if (vnd === 80000) {
+        return { pkgId: "c1", pkgName: "Gói 1 tháng", pkgData: "1000GB", pkg: "Gói 1 tháng (1000GB · 80,000VND)" };
+      }
+
+      // Trường hợp mua nhiều tháng (qty > 1)
+      if (qty > 1) {
+        const unit = Math.round(vnd / qty);
+        if (unit === 60000) return { pkgId: "t1", pkgName: "Gói 1 tháng", pkgData: "100GB", pkg: "Gói 1 tháng (100GB · 60,000VND)" };
+        if (unit === 70000) return { pkgId: "t2", pkgName: "Gói 1 tháng", pkgData: "500GB", pkg: "Gói 1 tháng (500GB · 70,000VND)" };
+        if (unit === 80000) return { pkgId: "c1", pkgName: "Gói 1 tháng", pkgData: "1000GB", pkg: "Gói 1 tháng (1000GB · 80,000VND)" };
+      }
+
+      // Bội số nếu chưa có qty
+      if (vnd % 80000 === 0 && vnd / 80000 <= 12) {
+        const q = vnd / 80000;
+        return { pkgId: "c1", pkgName: "Gói 1 tháng", pkgData: "1000GB", pkg: "Gói 1 tháng (1000GB · 80,000VND)", qty: q, days: q * 30 };
+      }
+      if (vnd % 70000 === 0 && vnd / 70000 <= 12) {
+        const q = vnd / 70000;
+        return { pkgId: "t2", pkgName: "Gói 1 tháng", pkgData: "500GB", pkg: "Gói 1 tháng (500GB · 70,000VND)", qty: q, days: q * 30 };
+      }
+      if (vnd % 60000 === 0 && vnd / 60000 <= 12) {
+        const q = vnd / 60000;
+        return { pkgId: "t1", pkgName: "Gói 1 tháng", pkgData: "100GB", pkg: "Gói 1 tháng (100GB · 60,000VND)", qty: q, days: q * 30 };
+      }
+
+      return null;
+    }
+
+    function autoNormalizePackagesAll() {
+      if (!orders || orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      let count = 0;
+      orders.forEach(o => {
+        const p = detectPackageByOrder(o);
+        if (p) {
+          let changed = false;
+          if (o.pkgId !== p.pkgId) { o.pkgId = p.pkgId; changed = true; }
+          if (o.pkgName !== p.pkgName) { o.pkgName = p.pkgName; changed = true; }
+          if (o.pkgData !== p.pkgData) { o.pkgData = p.pkgData; changed = true; }
+          if (o.pkg !== p.pkg) { o.pkg = p.pkg; changed = true; }
+          if (p.qty && o.qty !== p.qty) { o.qty = p.qty; changed = true; }
+          if (p.days && (!o.days || o.days === "")) { o.days = p.days; changed = true; }
+          if (p.expDate && !o.expDate) { o.expDate = p.expDate; changed = true; }
+          if (changed) count++;
+        }
+      });
+      renderTable();
+      updateStats();
+      showToast(`Đã chuẩn hóa thông tin gói cước theo giá cho ${count} đơn!`, "success");
+    }
+
+    // 4. SẮP XẾP THỨ TỰ JSON DỰA TRÊN THỜI GIAN TẠO (CŨ ĐẾN MỚI)
+    function sortOrdersByDateAsc() {
+      if (!orders || orders.length === 0) {
+        showToast("Bảng đơn hàng đang trống!", "error");
+        return;
+      }
+      orders.sort((a, b) => {
+        const tA = a.createdTs || parseDateStrToTs(a.date || a.dateCreated) || 0;
+        const tB = b.createdTs || parseDateStrToTs(b.date || b.dateCreated) || 0;
+        return tA - tB;
+      });
+      updateMonthFilterOptions();
+      renderTable();
+      updateStats();
+      showToast(`Đã sắp xếp toàn bộ ${orders.length} đơn theo ngày tạo (Cũ ➔ Mới)!`, "success");
+    }
+
     // 1. TỰ ĐỘNG ĐỒNG BỘ CREATEDTS CHUẨN EPOCH MILI GIÂY TỪ DATE/DATECREATED
     function autoSyncCreatedTsAll() {
       if (!orders || orders.length === 0) {
@@ -1397,18 +1650,35 @@
         showToast("Bảng đơn hàng đang trống!", "error");
         return;
       }
+      // Tự động chuẩn hóa và lưu lại toàn bộ dữ liệu hiện tại
+      orders = orders.map(normalizeOrder);
+      renderTable();
+      updateStats();
+
       const minJson = getMinifiedJson();
-      navigator.clipboard.writeText(minJson).then(() => {
-        showToast("ĐÃ COPY JSON 1 DÒNG! Sẵn sàng dán trực tiếp vào KV.", "success");
-      }).catch(() => {
-        const ta = document.createElement("textarea");
-        ta.value = minJson;
-        document.body.appendChild(ta);
-        ta.select();
-        document.execCommand("copy");
-        document.body.removeChild(ta);
-        showToast("Đã copy JSON 1 dòng vào Clipboard!", "success");
-      });
+      const doneMsg = `ĐÃ LƯU & COPY ${orders.length} ĐƠN VÀO CLIPBOARD! Sẵn sàng dán vào KV ALL_ORDERS.`;
+      
+      if (navigator.clipboard && navigator.clipboard.writeText) {
+        navigator.clipboard.writeText(minJson).then(() => {
+          showToast(doneMsg, "success");
+        }).catch(() => {
+          fallbackCopyText(minJson, doneMsg);
+        });
+      } else {
+        fallbackCopyText(minJson, doneMsg);
+      }
+    }
+
+    function fallbackCopyText(text, msg) {
+      const ta = document.createElement("textarea");
+      ta.value = text;
+      ta.style.position = "fixed";
+      ta.style.left = "-9999px";
+      document.body.appendChild(ta);
+      ta.select();
+      document.execCommand("copy");
+      document.body.removeChild(ta);
+      showToast(msg, "success");
     }
 
     function downloadJsonFile() {
