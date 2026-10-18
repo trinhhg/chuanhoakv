@@ -106,39 +106,51 @@
     </div>
   </header>
 
-  <!-- INPUT PANEL (DÁN JSON) -->
+  <!-- INPUT PANEL (DÁN 2 JSON CÙNG LÚC: JSON 1 LÀM MỐC, JSON 2 QUÉT BỔ SUNG ĐƠN CHƯA CÓ) -->
   <section id="inputPanel" class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 p-4 flex-none shadow-inner">
-    <div class="w-full grid grid-cols-1 lg:grid-cols-4 gap-4">
-      <div class="lg:col-span-3 flex flex-col gap-2">
+    <div class="w-full grid grid-cols-1 lg:grid-cols-12 gap-3">
+      <!-- Ô JSON 1: MỐC CHUẨN -->
+      <div class="lg:col-span-5 flex flex-col gap-1.5">
         <div class="flex items-center justify-between">
-          <label class="text-xs font-bold text-slate-700 dark:text-slate-300 flex items-center gap-1.5">
-            <i class="fa-solid fa-paste text-blue-500"></i> Dán mảng JSON từ Cloudflare KV (ALL_ORDERS):
+          <label class="text-xs font-bold text-blue-600 dark:text-blue-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-database"></i> JSON 1 (MỐC CHUẨN ALL_ORDERS):
           </label>
-          <div class="flex gap-2 text-xs">
-            <button onclick="clearInput()" class="text-rose-600 hover:underline">Xóa ô nhập</button>
-          </div>
+          <span class="text-[10px] text-slate-400 font-semibold">Dữ liệu gốc giữ nguyên</span>
         </div>
-        <textarea id="rawJsonInput" rows="5" placeholder='Dán mảng JSON vào đây, ví dụ: [{"id":"DHEDR7D9HAPQ", "email":"user@gmail.com", ...}]' class="w-full p-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-slate-300 dark:border-slate-800 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 resize-y"></textarea>
+        <textarea id="rawJsonInput" rows="5" placeholder='Dán mảng JSON gốc tại đây làm mốc: [{"id":"DHA1B2C3D4E5", ...}]' class="w-full p-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-blue-300 dark:border-blue-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 text-slate-800 dark:text-slate-200 resize-y"></textarea>
       </div>
-      <div class="flex flex-col justify-between gap-3 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
-        <div>
-          <div class="text-xs font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1.5">
-            <i class="fa-solid fa-circle-check text-emerald-500"></i> Tính năng chuẩn hóa:
-          </div>
-          <ul class="text-[11px] text-slate-600 dark:text-slate-400 space-y-1 list-disc list-inside">
-            <li>Sắp xếp <b>37 trường canonical</b> đồng nhất.</li>
-            <li>Sửa <code class="font-mono text-rose-500">lockInfo</code> về JSON Object <code class="font-mono">{}</code> chuẩn.</li>
-            <li>Đồng bộ <code class="font-mono">dateCreated</code> từ <code class="font-mono">date</code>.</li>
-            <li>Bấm cây bút chì ở mỗi dòng để chỉnh sửa trực tiếp 37 cột.</li>
-          </ul>
+
+      <!-- Ô JSON 2: QUÉT BỔ SUNG -->
+      <div class="lg:col-span-5 flex flex-col gap-1.5">
+        <div class="flex items-center justify-between">
+          <label class="text-xs font-bold text-purple-600 dark:text-purple-400 flex items-center gap-1.5">
+            <i class="fa-solid fa-file-circle-plus"></i> JSON 2 (QUÉT ĐƠN BỔ SUNG):
+          </label>
+          <span class="text-[10px] text-purple-500 font-semibold">Chỉ lấy đơn JSON 1 chưa có</span>
         </div>
-        <button onclick="parseAndLoadJson()" class="w-full py-2 px-3 rounded-lg text-xs font-bold bg-blue-600 hover:bg-blue-500 text-white shadow transition flex items-center justify-center gap-1.5">
-          <i class="fa-solid fa-play"></i> <span>Phân tích & Nạp vào Bảng</span>
-        </button>
+        <textarea id="rawJsonInput2" rows="5" placeholder='Dán mảng JSON thứ hai tại đây (lỗi format vẫn nạp bình thường, tự lọc đơn trùng)' class="w-full p-2.5 text-xs font-mono bg-slate-50 dark:bg-slate-950 border border-purple-300 dark:border-purple-900 rounded-lg focus:outline-none focus:ring-2 focus:ring-purple-500 text-slate-800 dark:text-slate-200 resize-y"></textarea>
+      </div>
+
+      <!-- CỘT HÀNH ĐỘNG & HƯỚNG DẪN -->
+      <div class="lg:col-span-2 flex flex-col justify-between gap-2 bg-slate-50 dark:bg-slate-950 p-3 rounded-xl border border-slate-200 dark:border-slate-800">
+        <div>
+          <div class="text-[11px] font-bold text-slate-800 dark:text-slate-200 mb-1 flex items-center gap-1">
+            <i class="fa-solid fa-code-merge text-emerald-500"></i> Cơ chế ghép đơn:
+          </div>
+          <p class="text-[10px] text-slate-500 leading-tight">
+            JSON 1 làm mốc. JSON 2 được quét tự động, đơn nào chưa có mã ID thì nạp thêm vào. Lỗi format cũng được tự sửa về 37 cột chuẩn!
+          </p>
+        </div>
+        <div class="flex flex-col gap-1.5">
+          <button onclick="parseAndLoadJson()" class="w-full py-2 px-2.5 rounded-lg text-xs font-bold bg-gradient-to-r from-blue-600 to-indigo-600 hover:from-blue-500 hover:to-indigo-500 text-white shadow transition flex items-center justify-center gap-1.5 active:scale-95">
+            <i class="fa-solid fa-play"></i> <span>Phân tích & Ghép</span>
+          </button>
+          <button onclick="clearInput()" class="text-[11px] text-rose-600 hover:underline text-center">Xóa cả 2 ô nhập</button>
+        </div>
       </div>
     </div>
   </section>
-
+  
   <!-- TOOLBAR & CÁC BỘ LỌC NÂNG CAO -->
   <section class="bg-white dark:bg-slate-900 border-b border-slate-200 dark:border-slate-800 px-4 py-2 flex-none shadow-sm">
     <div class="w-full flex flex-wrap items-center justify-between gap-3">
@@ -220,8 +232,8 @@
         <button onclick="autoSyncQtyDaysAll()" class="px-2.5 py-1 rounded-md bg-blue-50 dark:bg-blue-950/40 hover:bg-blue-100 dark:hover:bg-blue-900/50 text-blue-700 dark:text-blue-300 font-bold transition flex items-center gap-1 border border-blue-300 dark:border-blue-800" title="Đồng bộ 1 Qty = 30 Days (vd: 35 days vẫn là 1 qty)">
           <i class="fa-solid fa-arrows-rotate text-blue-500"></i> Đồng bộ Qty & Days
         </button>
-        <button onclick="sortOrdersByDateAsc()" class="px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-bold transition flex items-center gap-1 border border-purple-300 dark:border-purple-800" title="Sắp xếp toàn bộ dữ liệu đơn hàng theo ngày tạo từ Cũ đến Mới">
-          <i class="fa-solid fa-arrow-down-short-wide text-purple-500"></i> Sắp xếp Cũ ➔ Mới
+        <button onclick="sortOrdersByDateDesc()" class="px-2.5 py-1 rounded-md bg-purple-50 dark:bg-purple-950/40 hover:bg-purple-100 dark:hover:bg-purple-900/50 text-purple-700 dark:text-purple-300 font-bold transition flex items-center gap-1 border border-purple-300 dark:border-purple-800" title="Sắp xếp toàn bộ dữ liệu đơn hàng theo ngày tạo từ Mới nhất ở đầu đến Cũ nhất ở đáy">
+          <i class="fa-solid fa-arrow-down-wide-short text-purple-500"></i> Sắp xếp Mới ➔ Cũ
         </button>
         <button onclick="autoNormalizeOrderCodesAll()" class="px-2 py-1 rounded-md bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 text-slate-700 dark:text-slate-300 font-semibold transition flex items-center gap-1 border border-slate-200 dark:border-slate-700" title="Chuẩn hóa DH-XXXXXXXXXX thành DHXXXXXXXXXX (DH + đúng 10 ký tự)">
           <i class="fa-solid fa-barcode text-indigo-500"></i> Mã DH
@@ -903,29 +915,98 @@
     }
 
     // ================================================================
-    // 3. NẠP JSON & TỰ ĐỘNG CẬP NHẬT FILTER THÁNG
+    // 3. NẠP VÀ GHÉP 2 JSON (JSON 1 LÀM MỐC, JSON 2 QUÉT ĐƠN CHƯA CÓ ĐỂ BỔ SUNG)
     // ================================================================
     function parseAndLoadJson() {
-      const raw = document.getElementById('rawJsonInput').value.trim();
-      if (!raw) {
-        showToast("Vui lòng dán dữ liệu JSON trước!", "error");
+      const raw1 = document.getElementById('rawJsonInput').value.trim();
+      const el2 = document.getElementById('rawJsonInput2');
+      const raw2 = el2 ? el2.value.trim() : "";
+
+      if (!raw1 && !raw2) {
+        showToast("Vui lòng dán dữ liệu vào ít nhất một ô JSON!", "error");
         return;
       }
-      try {
-        let parsed = JSON.parse(raw);
-        if (!Array.isArray(parsed)) {
-          if (parsed && typeof parsed === 'object') parsed = [parsed];
-          else throw new Error("Dữ liệu không phải là mảng hoặc đối tượng JSON");
+
+      let parsed1 = [];
+      let parsed2 = [];
+
+      // 1. Phân tích JSON 1 (Mốc chuẩn)
+      if (raw1) {
+        try {
+          let p1 = JSON.parse(raw1);
+          if (!Array.isArray(p1)) {
+            if (p1 && typeof p1 === 'object') p1 = [p1];
+            else throw new Error("JSON 1 không phải là mảng hoặc đối tượng hợp lệ");
+          }
+          parsed1 = p1;
+        } catch (e) {
+          showToast("Lỗi cú pháp JSON 1 (Mốc): " + e.message, "error");
+          return;
         }
-        orders = parsed.map(normalizeOrder);
-        updateMonthFilterOptions();
-        renderTable();
-        updateStats();
-        showToast(`Đã tải thành công ${orders.length} đơn hàng!`, "success");
-        document.getElementById('inputPanel').classList.add('hidden');
-      } catch (e) {
-        showToast("Lỗi cú pháp JSON: " + e.message, "error");
       }
+
+      // 2. Phân tích JSON 2 (Quét bổ sung)
+      if (raw2) {
+        try {
+          let p2 = JSON.parse(raw2);
+          if (!Array.isArray(p2)) {
+            if (p2 && typeof p2 === 'object') p2 = [p2];
+            else throw new Error("JSON 2 không phải là mảng hoặc đối tượng hợp lệ");
+          }
+          parsed2 = p2;
+        } catch (e) {
+          showToast("Lỗi cú pháp JSON 2 (Bổ sung): " + e.message, "error");
+          return;
+        }
+      }
+
+      // 3. Chuẩn hóa JSON 1 làm mốc chính
+      const masterList = parsed1.map(normalizeOrder);
+
+      // Lưu lại danh sách ID của JSON 1 để đối chiếu
+      const existingIds = new Set();
+      masterList.forEach(o => {
+        if (o.id) {
+          const cleanId = String(o.id).trim().toUpperCase().replace(/[\-\s]/g, '');
+          if (cleanId) existingIds.add(cleanId);
+        }
+      });
+
+      // 4. Quét JSON 2: Đơn nào JSON 1 chưa có thì ép chuẩn và nạp vào (kể cả lỗi format)
+      let addedFrom2 = 0;
+      let skippedDuplicates = 0;
+
+      parsed2.forEach(item => {
+        if (!item || typeof item !== 'object') return;
+        const rawId = item.id ? String(item.id).trim().toUpperCase().replace(/[\-\s]/g, '') : "";
+
+        // Nếu ID đã có trong JSON 1 mốc thì bỏ qua không ghi đè
+        if (rawId && existingIds.has(rawId)) {
+          skippedDuplicates++;
+          return;
+        }
+
+        // Đơn mới chưa có trong JSON 1: Tự động ép chuẩn về 37 trường canonical
+        const safeOrder = normalizeOrder(item);
+        masterList.push(safeOrder);
+        if (safeOrder.id) {
+          const cleanSafeId = String(safeOrder.id).trim().toUpperCase().replace(/[\-\s]/g, '');
+          if (cleanSafeId) existingIds.add(cleanSafeId);
+        }
+        addedFrom2++;
+      });
+
+      orders = masterList;
+      updateMonthFilterOptions();
+      renderTable();
+      updateStats();
+
+      if (parsed2.length > 0) {
+        showToast(`Đã nạp ${parsed1.length} đơn mốc, thêm +${addedFrom2} đơn mới từ JSON 2 (bỏ qua ${skippedDuplicates} đơn trùng)!`, "success");
+      } else {
+        showToast(`Đã tải thành công ${orders.length} đơn hàng!`, "success");
+      }
+      document.getElementById('inputPanel').classList.add('hidden');
     }
 
     // Tự động quét và điền danh sách Tháng (MM/YYYY) vào dropdown
@@ -1480,8 +1561,8 @@
       showToast(`Đã chuẩn hóa thông tin gói cước theo giá cho ${count} đơn!`, "success");
     }
 
-    // 4. SẮP XẾP THỨ TỰ JSON DỰA TRÊN THỜI GIAN TẠO (CŨ ĐẾN MỚI)
-    function sortOrdersByDateAsc() {
+    // 4. SẮP XẾP THỨ TỰ JSON DỰA TRÊN THỜI GIAN TẠO (MỚI NHẤT Ở ĐẦU, CŨ NHẤT Ở ĐÁY)
+    function sortOrdersByDateDesc() {
       if (!orders || orders.length === 0) {
         showToast("Bảng đơn hàng đang trống!", "error");
         return;
@@ -1489,12 +1570,12 @@
       orders.sort((a, b) => {
         const tA = a.createdTs || parseDateStrToTs(a.date || a.dateCreated) || 0;
         const tB = b.createdTs || parseDateStrToTs(b.date || b.dateCreated) || 0;
-        return tA - tB;
+        return tB - tA; // Timestamp lớn hơn (mới hơn) đứng trên đầu bảng
       });
       updateMonthFilterOptions();
       renderTable();
       updateStats();
-      showToast(`Đã sắp xếp toàn bộ ${orders.length} đơn theo ngày tạo (Cũ ➔ Mới)!`, "success");
+      showToast(`Đã sắp xếp toàn bộ ${orders.length} đơn theo ngày tạo (Mới ➔ Cũ)!`, "success");
     }
 
     // 1. TỰ ĐỘNG ĐỒNG BỘ CREATEDTS CHUẨN EPOCH MILI GIÂY TỪ DATE/DATECREATED
@@ -1778,6 +1859,9 @@
 
     function clearInput() {
       document.getElementById('rawJsonInput').value = "";
+      const el2 = document.getElementById('rawJsonInput2');
+      if (el2) el2.value = "";
+    }
     }
 
     function showToast(msg, type = 'info') {
