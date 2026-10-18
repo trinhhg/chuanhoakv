@@ -915,37 +915,36 @@
     }
 
     // ================================================================
-    // 3. NẠP VÀ GHÉP 2 JSON (JSON 1 LÀM MỐC, JSON 2 QUÉT ĐƠN CHƯA CÓ ĐỂ BỔ SUNG)
+    // 3. NẠP VÀ GHÉP 2 JSON (BẮT BUỘC JSON 1 LÀM MỐC, JSON 2 QUÉT BỔ SUNG ĐƠN CHƯA CÓ)
     // ================================================================
     function parseAndLoadJson() {
       const raw1 = document.getElementById('rawJsonInput').value.trim();
       const el2 = document.getElementById('rawJsonInput2');
       const raw2 = el2 ? el2.value.trim() : "";
 
-      if (!raw1 && !raw2) {
-        showToast("Vui lòng dán dữ liệu vào ít nhất một ô JSON!", "error");
+      // Bắt buộc phải có dữ liệu ở ô JSON 1 (Bảng Mốc)
+      if (!raw1) {
+        showToast("Bắt buộc phải nhập bảng JSON 1 (Bảng Mốc) để phân tích!", "error");
         return;
       }
 
       let parsed1 = [];
       let parsed2 = [];
 
-      // 1. Phân tích JSON 1 (Mốc chuẩn)
-      if (raw1) {
-        try {
-          let p1 = JSON.parse(raw1);
-          if (!Array.isArray(p1)) {
-            if (p1 && typeof p1 === 'object') p1 = [p1];
-            else throw new Error("JSON 1 không phải là mảng hoặc đối tượng hợp lệ");
-          }
-          parsed1 = p1;
-        } catch (e) {
-          showToast("Lỗi cú pháp JSON 1 (Mốc): " + e.message, "error");
-          return;
+      // 1. Phân tích JSON 1 (Mốc chuẩn - Bắt buộc)
+      try {
+        let p1 = JSON.parse(raw1);
+        if (!Array.isArray(p1)) {
+          if (p1 && typeof p1 === 'object') p1 = [p1];
+          else throw new Error("JSON 1 không phải là mảng hoặc đối tượng hợp lệ");
         }
+        parsed1 = p1;
+      } catch (e) {
+        showToast("Lỗi cú pháp JSON 1 (Mốc): " + e.message, "error");
+        return;
       }
 
-      // 2. Phân tích JSON 2 (Quét bổ sung)
+      // 2. Phân tích JSON 2 (Quét bổ sung - Nếu có dán thì mới phân tích)
       if (raw2) {
         try {
           let p2 = JSON.parse(raw2);
@@ -972,39 +971,42 @@
         }
       });
 
-      // 4. Quét JSON 2: Đơn nào JSON 1 chưa có thì ép chuẩn và nạp vào (kể cả lỗi format)
+      // 4. Quét JSON 2 (nếu có): Đơn nào JSON 1 chưa có thì ép chuẩn và nạp vào (kể cả lỗi format)
       let addedFrom2 = 0;
       let skippedDuplicates = 0;
 
-      parsed2.forEach(item => {
-        if (!item || typeof item !== 'object') return;
-        const rawId = item.id ? String(item.id).trim().toUpperCase().replace(/[\-\s]/g, '') : "";
+      if (parsed2.length > 0) {
+        parsed2.forEach(item => {
+          if (!item || typeof item !== 'object') return;
+          const rawId = item.id ? String(item.id).trim().toUpperCase().replace(/[\-\s]/g, '') : "";
 
-        // Nếu ID đã có trong JSON 1 mốc thì bỏ qua không ghi đè
-        if (rawId && existingIds.has(rawId)) {
-          skippedDuplicates++;
-          return;
-        }
+          // Nếu ID đã có trong JSON 1 mốc thì bỏ qua không ghi đè
+          if (rawId && existingIds.has(rawId)) {
+            skippedDuplicates++;
+            return;
+          }
 
-        // Đơn mới chưa có trong JSON 1: Tự động ép chuẩn về 37 trường canonical
-        const safeOrder = normalizeOrder(item);
-        masterList.push(safeOrder);
-        if (safeOrder.id) {
-          const cleanSafeId = String(safeOrder.id).trim().toUpperCase().replace(/[\-\s]/g, '');
-          if (cleanSafeId) existingIds.add(cleanSafeId);
-        }
-        addedFrom2++;
-      });
+          // Đơn mới chưa có trong JSON 1: Tự động ép chuẩn về 37 trường canonical
+          const safeOrder = normalizeOrder(item);
+          masterList.push(safeOrder);
+          if (safeOrder.id) {
+            const cleanSafeId = String(safeOrder.id).trim().toUpperCase().replace(/[\-\s]/g, '');
+            if (cleanSafeId) existingIds.add(cleanSafeId);
+          }
+          addedFrom2++;
+        });
+      }
 
       orders = masterList;
       updateMonthFilterOptions();
       renderTable();
       updateStats();
 
-      if (parsed2.length > 0) {
+      // Thông báo rõ ràng theo từng trường hợp
+      if (raw2 && parsed2.length > 0) {
         showToast(`Đã nạp ${parsed1.length} đơn mốc, thêm +${addedFrom2} đơn mới từ JSON 2 (bỏ qua ${skippedDuplicates} đơn trùng)!`, "success");
       } else {
-        showToast(`Đã tải thành công ${orders.length} đơn hàng!`, "success");
+        showToast(`Đã tải thành công ${orders.length} đơn hàng từ JSON 1!`, "success");
       }
       document.getElementById('inputPanel').classList.add('hidden');
     }
@@ -1861,7 +1863,6 @@
       document.getElementById('rawJsonInput').value = "";
       const el2 = document.getElementById('rawJsonInput2');
       if (el2) el2.value = "";
-    }
     }
 
     function showToast(msg, type = 'info') {
